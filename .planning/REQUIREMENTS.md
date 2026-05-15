@@ -19,12 +19,12 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Job Management
 
-- [ ] **JOBS-01**: Admin can create jobs with title, date/time, venue, description
+- [x] **JOBS-01**: Admin can create jobs with title, date/time, venue, description
 - [ ] **JOBS-02**: Admin can edit and delete jobs
 - [ ] **JOBS-03**: Admin can search and filter jobs by date, status, venue
-- [ ] **JOBS-04**: Jobs follow lifecycle states: intake → simmer → active → complete
+- [x] **JOBS-04**: Jobs follow lifecycle states: intake → simmer → active → complete
 - [ ] **JOBS-05**: Admin can transition jobs between lifecycle states
-- [ ] **JOBS-06**: Job detail view shows all assigned crew, gear, messages, tasks, and files
+- [x] **JOBS-06**: Job detail view shows all assigned crew, gear, messages, tasks, and files
 
 ### Crew Management
 
@@ -158,12 +158,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AUTH-05 | Phase 1 | Complete |
 | AUTH-06 | Phase 1 | Complete |
 | AUTH-07 | Phase 1 | Complete |
-| JOBS-01 | Phase 2 | Pending |
+| JOBS-01 | Phase 2 | Complete |
 | JOBS-02 | Phase 2 | Pending |
 | JOBS-03 | Phase 2 | Pending |
-| JOBS-04 | Phase 2 | Pending |
+| JOBS-04 | Phase 2 | Complete |
 | JOBS-05 | Phase 2 | Pending |
-| JOBS-06 | Phase 2 | Pending |
+| JOBS-06 | Phase 2 | Complete |
 | CREW-01 | Phase 3 | Pending |
 | CREW-02 | Phase 3 | Pending |
 | CREW-03 | Phase 3 | Pending |
