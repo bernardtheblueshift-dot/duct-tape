@@ -7,7 +7,7 @@
 
 ## Phases
 
-- [ ] **Phase 1: Foundation & Multi-Tenancy** - Database, auth, tenant isolation with RLS
+- [x] **Phase 1: Foundation & Multi-Tenancy** - Database, auth, tenant isolation with RLS (completed 2026-05-15)
 - [ ] **Phase 2: Job Management** - Create, edit, search jobs with lifecycle states
 - [ ] **Phase 3: Resource Management** - Crew and equipment with conflict detection
 - [ ] **Phase 4: Calendar & Scheduling** - Visual calendar with availability views
@@ -185,7 +185,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Multi-Tenancy | 1/3 | In Progress|  |
+| 1. Foundation & Multi-Tenancy | 3/3 | Complete   | 2026-05-15 |
 | 2. Job Management | 0/? | Not started | - |
 | 3. Resource Management | 0/? | Not started | - |
 | 4. Calendar & Scheduling | 0/? | Not started | - |

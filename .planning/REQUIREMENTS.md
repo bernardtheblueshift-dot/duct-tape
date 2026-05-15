@@ -13,7 +13,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **AUTH-02**: User receives email verification after signup
 - [x] **AUTH-03**: User can log in and session persists across browser refresh
 - [x] **AUTH-04**: User can reset password via email link
-- [ ] **AUTH-05**: Admin can invite crew members to their tenant
+- [x] **AUTH-05**: Admin can invite crew members to their tenant
 - [x] **AUTH-06**: Each tenant's data is fully isolated (PostgreSQL RLS)
 - [x] **AUTH-07**: Role-based access control (admin vs crew permissions)
 
@@ -155,7 +155,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AUTH-02 | Phase 1 | Complete |
 | AUTH-03 | Phase 1 | Complete |
 | AUTH-04 | Phase 1 | Complete |
-| AUTH-05 | Phase 1 | Pending |
+| AUTH-05 | Phase 1 | Complete |
 | AUTH-06 | Phase 1 | Complete |
 | AUTH-07 | Phase 1 | Complete |
 | JOBS-01 | Phase 2 | Pending |
