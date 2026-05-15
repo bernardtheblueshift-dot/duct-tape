@@ -37,8 +37,8 @@
 **Plans**: 3 plans in 3 waves
 
 Plans:
-- [ ] 01-01-PLAN.md — Database foundation with PostgreSQL RLS and timezone-aware models (Wave 1)
-- [ ] 01-02-PLAN.md — Core authentication (register, login, verify, reset, RBAC) (Wave 2)
+- [x] 01-01-PLAN.md — Database foundation with PostgreSQL RLS and timezone-aware models (Wave 1) ✓
+- [x] 01-02-PLAN.md — Core authentication (register, login, verify, reset, RBAC) (Wave 2) ✓
 - [ ] 01-03-PLAN.md — Invitation workflow and test suite (Wave 3)
 
 ---

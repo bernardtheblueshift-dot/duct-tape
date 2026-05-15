@@ -9,13 +9,13 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Authentication & Multi-tenancy
 
-- [ ] **AUTH-01**: User can sign up with email and password
-- [ ] **AUTH-02**: User receives email verification after signup
-- [ ] **AUTH-03**: User can log in and session persists across browser refresh
-- [ ] **AUTH-04**: User can reset password via email link
+- [x] **AUTH-01**: User can sign up with email and password
+- [x] **AUTH-02**: User receives email verification after signup
+- [x] **AUTH-03**: User can log in and session persists across browser refresh
+- [x] **AUTH-04**: User can reset password via email link
 - [ ] **AUTH-05**: Admin can invite crew members to their tenant
 - [x] **AUTH-06**: Each tenant's data is fully isolated (PostgreSQL RLS)
-- [ ] **AUTH-07**: Role-based access control (admin vs crew permissions)
+- [x] **AUTH-07**: Role-based access control (admin vs crew permissions)
 
 ### Job Management
 
@@ -151,13 +151,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01 | Phase 1 | Pending |
-| AUTH-02 | Phase 1 | Pending |
-| AUTH-03 | Phase 1 | Pending |
-| AUTH-04 | Phase 1 | Pending |
+| AUTH-01 | Phase 1 | Complete |
+| AUTH-02 | Phase 1 | Complete |
+| AUTH-03 | Phase 1 | Complete |
+| AUTH-04 | Phase 1 | Complete |
 | AUTH-05 | Phase 1 | Pending |
 | AUTH-06 | Phase 1 | Complete |
-| AUTH-07 | Phase 1 | Pending |
+| AUTH-07 | Phase 1 | Complete |
 | JOBS-01 | Phase 2 | Pending |
 | JOBS-02 | Phase 2 | Pending |
 | JOBS-03 | Phase 2 | Pending |
