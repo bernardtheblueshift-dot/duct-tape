@@ -48,3 +48,9 @@ class JobResponse(BaseModel):
 
     class Config:
         from_attributes = True  # Allows returning SQLAlchemy models directly
+
+
+class JobTransitionRequest(BaseModel):
+    """Request schema for job state transitions"""
+
+    new_state: JobState

@@ -10,8 +10,9 @@ from app.database import get_db
 from app.dependencies import get_current_tenant
 from app.core.permissions import require_admin
 from app.models.job import Job, JobState
-from app.schemas.job import JobCreate, JobUpdate, JobResponse
+from app.schemas.job import JobCreate, JobUpdate, JobResponse, JobTransitionRequest
 from app.models.user import User
+from app.core.state_machine import can_transition
 
 router = APIRouter(prefix="/api/v1/jobs", tags=["jobs"])
 
@@ -186,3 +187,48 @@ async def delete_job(
 
     await db.delete(job)
     await db.commit()
+
+
+@router.post("/{job_id}/transition", response_model=JobResponse)
+async def transition_job_state(
+    job_id: str,
+    transition: JobTransitionRequest,
+    current_user: User = Depends(require_admin),
+    tenant_id: str = Depends(get_current_tenant),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Transition job to new state with validation (admin only).
+
+    Validates that transition is allowed before updating state.
+    State machine enforces:
+    - INTAKE → [SIMMER, ACTIVE]
+    - SIMMER → [ACTIVE, INTAKE] (can return to intake)
+    - ACTIVE → [COMPLETE, SIMMER] (can pause to simmer)
+    - COMPLETE → [] (terminal state)
+
+    Returns 400 if transition is invalid.
+    RLS automatically filters by tenant.
+    """
+    # Get job
+    result = await db.execute(select(Job).where(Job.id == job_id))
+    job = result.scalar_one_or_none()
+
+    if not job:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Job not found",
+        )
+
+    # Validate transition
+    if not can_transition(job.state, transition.new_state):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid transition: {job.state.value} -> {transition.new_state.value}",
+        )
+
+    # Update state
+    job.state = transition.new_state
+    await db.commit()
+    await db.refresh(job)
+    return job
