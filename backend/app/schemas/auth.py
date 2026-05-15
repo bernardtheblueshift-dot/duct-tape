@@ -33,3 +33,13 @@ class TokenResponse(BaseModel):
 
 class MessageResponse(BaseModel):
     message: str
+
+
+class InviteRequest(BaseModel):
+    email: EmailStr
+    role: str = Field(default="crew", pattern="^(admin|crew)$")
+
+
+class AcceptInvitationRequest(BaseModel):
+    token: str
+    password: str = Field(min_length=8)
