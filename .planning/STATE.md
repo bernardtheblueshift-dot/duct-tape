@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 02-01-PLAN.md
-last_updated: "2026-05-16T02:02:06Z"
+stopped_at: Completed 02-03-PLAN.md
+last_updated: "2026-05-15T22:10:44.306Z"
 progress:
   total_phases: 2
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 6
-  completed_plans: 4
+  completed_plans: 6
 ---
 
 # Project State: Duct Tape
@@ -26,13 +26,13 @@ progress:
 ## Current Position
 
 Phase: 02 (Job Management) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 
 ### Phase Context
 
 Goal: Job lifecycle management with CRUD operations, state transitions, and resource assignment foundation
 
-Next action: Execute Plan 02-02 (Job CRUD API endpoints with state transitions)
+Next action: Execute Plan 02-03 (Job state transition validation endpoint)
 
 ## Performance Metrics
 
@@ -48,6 +48,8 @@ Next action: Execute Plan 02-02 (Job CRUD API endpoints with state transitions)
 | 01    | P02  | 369s     | 6     | 13    | 2026-05-16 |
 | 01    | P03  | 230s     | 4     | 10    | 2026-05-16 |
 | 02    | P01  | 227s     | 3     | 6     | 2026-05-16 |
+| 02    | P02  | 142s     | 2     | 3     | 2026-05-16 |
+| 02    | P03  | 221s     | 2     | 5     | 2026-05-16 |
 
 ## Accumulated Context
 
@@ -65,6 +67,9 @@ Next action: Execute Plan 02-02 (Job CRUD API endpoints with state transitions)
 | httpOnly cookies for tokens | Phase 1 P02 | 2026-05-16 | More secure than headers, prevents XSS token theft |
 | Placeholder sections in JobResponse | Phase 2 P01 | 2026-05-16 | UI can render empty state now, avoids breaking changes when Phase 3/5 add relationships |
 | Manual migration creation | Phase 2 P01 | 2026-05-16 | Docker unavailable, followed Phase 1 pattern of code review validation |
+| ILIKE for search instead of PostgreSQL full-text search | Phase 2 P02 | 2026-05-16 | Simpler implementation, sufficient for < 10K rows, can upgrade to ts_vector if needed |
+| State field excluded from PATCH endpoint | Phase 2 P02 | 2026-05-16 | Dedicated transition endpoint in Plan 02-03 provides validation |
+| Enum-based state machine vs transitions library | Phase 2 P03 | 2026-05-16 | 4-state linear flow too simple for transitions library overhead; enum more maintainable |
 
 ### Open Questions
 
@@ -90,24 +95,26 @@ Next action: Execute Plan 02-02 (Job CRUD API endpoints with state transitions)
 
 ## Session Continuity
 
-**Last session:** 2026-05-16T02:02:06Z
-**Stopped at:** Completed 02-01-PLAN.md
+**Last session:** 2026-05-15T22:10:44.303Z
+**Stopped at:** Completed 02-03-PLAN.md
 
 **What changed this session:**
 
-- Executed Plan 02-01: Job model and schemas foundation
-- Created Job model with JobState enum (intake/simmer/active/complete)
-- Created Pydantic schemas (JobCreate, JobUpdate, JobResponse) with placeholder sections
-- Created database migration with performance indexes (state, scheduled_start)
-- Made 4 atomic commits (TDD: failing tests + implementation + schemas + migration)
-- Docker unavailable: followed Phase 1 pattern (manual implementation, deferred verification)
+- Executed Plan 02-02: Job CRUD API endpoints
+- Created 5 REST endpoints (POST, GET list, GET single, PATCH, DELETE)
+- Implemented search across title/description/venue using ILIKE
+- Implemented filtering by state, venue, date range
+- All endpoints use RLS tenant context (get_current_tenant dependency)
+- Write endpoints (create/update/delete) require admin role
+- Made 3 atomic commits (TDD: failing tests + implementation + router registration)
+- PostgreSQL unavailable: tests written but not executed, deferred verification
 
 **Context for next session:**
 
-- Job model and schemas complete, ready for API endpoints
-- Next: Plan 02-02 (Job CRUD API with state transitions)
-- Placeholder sections in JobResponse ready for Phase 3/5 relationships
-- Migration 003 ready to apply once Docker available
+- Job CRUD API complete with search/filter capabilities
+- Next: Plan 02-03 (Job state transition validation endpoint)
+- Tests ready to run once PostgreSQL available (12 test functions in test_jobs_crud.py)
+- State transitions currently unvalidated - Plan 02-03 will add validation logic
 
 ---
 
