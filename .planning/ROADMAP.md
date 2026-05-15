@@ -34,7 +34,12 @@
   6. All datetime operations handle timezones correctly (stored as TIMESTAMPTZ, displayed in user's local timezone)
   7. Cross-tenant access attempts are blocked at database level (RLS verification)
 
-**Plans**: TBD
+**Plans**: 3 plans in 3 waves
+
+Plans:
+- [ ] 01-01-PLAN.md — Database foundation with PostgreSQL RLS and timezone-aware models (Wave 1)
+- [ ] 01-02-PLAN.md — Core authentication (register, login, verify, reset, RBAC) (Wave 2)
+- [ ] 01-03-PLAN.md — Invitation workflow and test suite (Wave 3)
 
 ---
 
@@ -180,7 +185,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Multi-Tenancy | 0/? | Not started | - |
+| 1. Foundation & Multi-Tenancy | 0/3 | Not started | - |
 | 2. Job Management | 0/? | Not started | - |
 | 3. Resource Management | 0/? | Not started | - |
 | 4. Calendar & Scheduling | 0/? | Not started | - |
@@ -209,4 +214,4 @@
 ---
 
 *Roadmap created: 2026-05-15*
-*Last updated: 2026-05-15*
+*Last updated: 2026-05-16*
