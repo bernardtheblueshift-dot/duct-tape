@@ -8,15 +8,15 @@ import uuid
 
 
 @pytest.mark.asyncio
-async def test_job_creation_defaults_to_intake_state(async_session, test_tenant):
+async def test_job_creation_defaults_to_intake_state(test_db, test_tenant):
     """Test that new jobs default to INTAKE state"""
     job = Job(
         title="Test Event",
         tenant_id=test_tenant.id,
     )
-    async_session.add(job)
-    await async_session.commit()
-    await async_session.refresh(job)
+    test_db.add(job)
+    await test_db.commit()
+    await test_db.refresh(job)
 
     assert job.state == JobState.INTAKE
     assert job.id is not None
@@ -24,7 +24,7 @@ async def test_job_creation_defaults_to_intake_state(async_session, test_tenant)
 
 
 @pytest.mark.asyncio
-async def test_job_has_tenant_and_timestamp_fields(async_session, test_tenant):
+async def test_job_has_tenant_and_timestamp_fields(test_db, test_tenant):
     """Test that Job inherits TenantMixin and TimestampMixin fields"""
     job = Job(
         title="Test Event",
@@ -32,9 +32,9 @@ async def test_job_has_tenant_and_timestamp_fields(async_session, test_tenant):
         venue="Test Venue",
         tenant_id=test_tenant.id,
     )
-    async_session.add(job)
-    await async_session.commit()
-    await async_session.refresh(job)
+    test_db.add(job)
+    await test_db.commit()
+    await test_db.refresh(job)
 
     # TenantMixin
     assert job.tenant_id == test_tenant.id
@@ -52,7 +52,7 @@ async def test_job_has_tenant_and_timestamp_fields(async_session, test_tenant):
 
 
 @pytest.mark.asyncio
-async def test_job_scheduled_times_are_timezone_aware(async_session, test_tenant):
+async def test_job_scheduled_times_are_timezone_aware(test_db, test_tenant):
     """Test that scheduled_start and scheduled_end are timezone-aware"""
     scheduled_start = datetime(2026, 6, 1, 10, 0, 0, tzinfo=timezone.utc)
     scheduled_end = datetime(2026, 6, 1, 18, 0, 0, tzinfo=timezone.utc)
@@ -63,9 +63,9 @@ async def test_job_scheduled_times_are_timezone_aware(async_session, test_tenant
         scheduled_end=scheduled_end,
         tenant_id=test_tenant.id,
     )
-    async_session.add(job)
-    await async_session.commit()
-    await async_session.refresh(job)
+    test_db.add(job)
+    await test_db.commit()
+    await test_db.refresh(job)
 
     assert job.scheduled_start == scheduled_start
     assert job.scheduled_end == scheduled_end
@@ -74,7 +74,7 @@ async def test_job_scheduled_times_are_timezone_aware(async_session, test_tenant
 
 
 @pytest.mark.asyncio
-async def test_job_all_states_exist(async_session, test_tenant):
+async def test_job_all_states_exist(test_db, test_tenant):
     """Test that all JobState enum values work"""
     states = [JobState.INTAKE, JobState.SIMMER, JobState.ACTIVE, JobState.COMPLETE]
 
@@ -84,11 +84,11 @@ async def test_job_all_states_exist(async_session, test_tenant):
             state=state,
             tenant_id=test_tenant.id,
         )
-        async_session.add(job)
-        await async_session.commit()
-        await async_session.refresh(job)
+        test_db.add(job)
+        await test_db.commit()
+        await test_db.refresh(job)
 
         assert job.state == state
 
         # Clear session for next iteration
-        await async_session.rollback()
+        await test_db.rollback()
