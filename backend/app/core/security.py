@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict
 import bcrypt
 import jwt
@@ -34,7 +34,7 @@ def create_access_token(user_id: str, tenant_id: str, role: str) -> str:
     Returns:
         JWT token string
     """
-    expire = datetime.utcnow() + timedelta(minutes=15)
+    expire = datetime.now(timezone.utc) + timedelta(minutes=15)
     payload = {
         "sub": user_id,
         "tenant_id": tenant_id,
@@ -55,7 +55,7 @@ def create_refresh_token(user_id: str) -> str:
     Returns:
         JWT token string
     """
-    expire = datetime.utcnow() + timedelta(days=7)
+    expire = datetime.now(timezone.utc) + timedelta(days=7)
     payload = {
         "sub": user_id,
         "type": "refresh",

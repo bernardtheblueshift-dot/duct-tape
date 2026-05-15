@@ -16,12 +16,8 @@ depends_on = None
 
 
 def upgrade() -> None:
-    # Create JobState enum type
-    op.execute(
-        """
-        CREATE TYPE jobstate AS ENUM ('intake', 'simmer', 'active', 'complete')
-    """
-    )
+    jobstate_enum = postgresql.ENUM("intake", "simmer", "active", "complete", name="jobstate", create_type=False)
+    jobstate_enum.create(op.get_bind(), checkfirst=True)
 
     # Create jobs table
     op.create_table(
@@ -35,7 +31,7 @@ def upgrade() -> None:
         sa.Column("scheduled_end", sa.DateTime(timezone=True), nullable=True),
         sa.Column(
             "state",
-            postgresql.ENUM("intake", "simmer", "active", "complete", name="jobstate"),
+            postgresql.ENUM("intake", "simmer", "active", "complete", name="jobstate", create_type=False),
             nullable=False,
             server_default="intake",
         ),

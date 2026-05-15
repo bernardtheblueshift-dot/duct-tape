@@ -1,5 +1,6 @@
 import pytest
 import pytest_asyncio
+from unittest.mock import patch
 from sqlalchemy import select
 from app.models import User, InvitationToken, UserRole
 
@@ -40,25 +41,24 @@ async def test_crew_cannot_create_invitation_returns_403(async_client, crew_toke
 
 @pytest.mark.asyncio
 async def test_invitation_sends_email_via_celery(
-    async_client, admin_token, test_tenant, test_admin_user, mocker
+    async_client, admin_token, test_tenant, test_admin_user
 ):
     """POST /invitations sends email via Celery task"""
     # Mock the Celery task
-    mock_send = mocker.patch("app.api.v1.invitations.send_invitation_email.delay")
+    with patch("app.api.v1.invitations.send_invitation_email") as mock_task:
+        response = await async_client.post(
+            "/api/v1/invitations/",
+            json={"email": "invited@test.com", "role": "crew"},
+            headers={"Authorization": f"Bearer {admin_token}"},
+        )
+        assert response.status_code == 200
 
-    response = await async_client.post(
-        "/api/v1/invitations/",
-        json={"email": "invited@test.com", "role": "crew"},
-        headers={"Authorization": f"Bearer {admin_token}"},
-    )
-    assert response.status_code == 200
-
-    # Verify email task was called
-    mock_send.assert_called_once()
-    args = mock_send.call_args[0]
-    assert args[0] == "invited@test.com"  # email
-    assert args[2] == test_admin_user.email  # inviter_name
-    assert args[3] == test_tenant.name  # tenant_name
+        # Verify email task was called
+        mock_task.delay.assert_called_once()
+        args = mock_task.delay.call_args[0]
+        assert args[0] == "invited@test.com"  # email
+        assert args[2] == test_admin_user.email  # inviter_name
+        assert args[3] == test_tenant.name  # tenant_name
 
 
 @pytest.mark.asyncio
@@ -97,7 +97,7 @@ async def test_accept_invitation_expired_token_returns_400(
     async_client, test_db, test_admin_user, test_tenant
 ):
     """POST /accept-invitation with expired token returns 400"""
-    from datetime import datetime, timedelta
+    from datetime import datetime, timedelta, timezone
 
     # Create expired invitation
     invitation = InvitationToken(
@@ -106,7 +106,7 @@ async def test_accept_invitation_expired_token_returns_400(
         invited_by=test_admin_user.id,
         role=UserRole.CREW,
         token="expired_token_123",
-        expires_at=datetime.utcnow() - timedelta(days=1),  # Already expired
+        expires_at=datetime.now(timezone.utc) - timedelta(days=1),  # Already expired
     )
     test_db.add(invitation)
     await test_db.commit()

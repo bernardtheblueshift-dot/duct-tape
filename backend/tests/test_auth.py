@@ -82,7 +82,7 @@ async def test_verify_email_activates_user(async_client, test_db):
 @pytest.mark.asyncio
 async def test_verify_email_expired_token_fails(async_client, test_db):
     """POST /auth/verify-email with expired token returns 400"""
-    from datetime import datetime, timedelta
+    from datetime import datetime, timedelta, timezone
 
     tenant = Tenant(name="Test", timezone="UTC")
     test_db.add(tenant)
@@ -102,7 +102,7 @@ async def test_verify_email_expired_token_fails(async_client, test_db):
     token = VerificationToken(
         user_id=user.id,
         token="expired_token_123",
-        expires_at=datetime.utcnow() - timedelta(hours=1),
+        expires_at=datetime.now(timezone.utc) - timedelta(hours=1),
     )
     test_db.add(token)
     await test_db.commit()
@@ -227,7 +227,11 @@ async def test_logout_clears_cookies(async_client):
     response = await async_client.post("/api/v1/auth/logout")
     assert response.status_code == 200
 
-    # Check cookies are cleared (max_age=0)
-    cookies = response.cookies
-    assert cookies.get("access_token") == ""
-    assert cookies.get("refresh_token") == ""
+    # Check cookies are cleared (max_age=0) via Set-Cookie headers
+    set_cookie_headers = response.headers.get_list("set-cookie")
+    cookie_names = [h.split("=")[0] for h in set_cookie_headers]
+    assert "access_token" in cookie_names
+    assert "refresh_token" in cookie_names
+    # Verify max-age=0 (deletion)
+    for header in set_cookie_headers:
+        assert "Max-Age=0" in header or '=""' in header

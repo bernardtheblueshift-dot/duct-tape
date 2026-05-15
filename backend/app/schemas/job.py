@@ -1,7 +1,8 @@
 """Pydantic schemas for Job API requests and responses"""
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from datetime import datetime
+from uuid import UUID
 from app.models.job import JobState
 
 
@@ -29,7 +30,7 @@ class JobUpdate(BaseModel):
 class JobResponse(BaseModel):
     """Response schema with all job fields + placeholders for future phases"""
 
-    id: str
+    id: UUID
     title: str
     description: str | None
     venue: str | None
@@ -46,8 +47,7 @@ class JobResponse(BaseModel):
     tasks: list = []  # Phase 5: Coordination Layer
     files: list = []  # Phase 5: Coordination Layer
 
-    class Config:
-        from_attributes = True  # Allows returning SQLAlchemy models directly
+    model_config = ConfigDict(from_attributes=True)
 
 
 class JobTransitionRequest(BaseModel):

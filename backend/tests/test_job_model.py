@@ -78,11 +78,14 @@ async def test_job_all_states_exist(test_db, test_tenant):
     """Test that all JobState enum values work"""
     states = [JobState.INTAKE, JobState.SIMMER, JobState.ACTIVE, JobState.COMPLETE]
 
+    # Capture tenant_id before loop to avoid lazy load after rollback
+    tenant_id = test_tenant.id
+
     for state in states:
         job = Job(
             title=f"Job in {state.value} state",
             state=state,
-            tenant_id=test_tenant.id,
+            tenant_id=tenant_id,
         )
         test_db.add(job)
         await test_db.commit()

@@ -1,7 +1,7 @@
 from sqlalchemy import Column, DateTime
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import DeclarativeBase
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 
 
@@ -23,11 +23,11 @@ class TimestampMixin:
     created_at = Column(
         DateTime(timezone=True),  # Uses TIMESTAMPTZ in PostgreSQL
         nullable=False,
-        default=datetime.utcnow,
+        default=lambda: datetime.now(timezone.utc),
     )
     updated_at = Column(
         DateTime(timezone=True),
         nullable=False,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
     )

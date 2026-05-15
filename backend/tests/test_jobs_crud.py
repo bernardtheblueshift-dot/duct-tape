@@ -2,17 +2,18 @@
 
 import pytest
 from httpx import AsyncClient
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from app.models.job import Job, JobState
 from app.models.user import User, UserRole
 from app.models.tenant import Tenant
+from app.core.security import create_access_token
 
 
 @pytest.mark.asyncio
 async def test_create_job_as_admin(async_client: AsyncClient, admin_token: str):
     """Admin can create job with valid data"""
     response = await async_client.post(
-        "/api/v1/jobs",
+        "/api/v1/jobs/",
         json={
             "title": "Corporate Event",
             "description": "Annual company meeting",
@@ -37,7 +38,7 @@ async def test_create_job_as_admin(async_client: AsyncClient, admin_token: str):
 async def test_create_job_as_crew_forbidden(async_client: AsyncClient, crew_token: str):
     """Crew user cannot create jobs"""
     response = await async_client.post(
-        "/api/v1/jobs",
+        "/api/v1/jobs/",
         json={"title": "Test Job"},
         headers={"Authorization": f"Bearer {crew_token}"},
     )
@@ -49,7 +50,7 @@ async def test_create_job_as_crew_forbidden(async_client: AsyncClient, crew_toke
 async def test_list_jobs_empty(async_client: AsyncClient, admin_token: str):
     """List jobs returns empty array when no jobs exist"""
     response = await async_client.get(
-        "/api/v1/jobs",
+        "/api/v1/jobs/",
         headers={"Authorization": f"Bearer {admin_token}"},
     )
 
@@ -59,42 +60,33 @@ async def test_list_jobs_empty(async_client: AsyncClient, admin_token: str):
 
 @pytest.mark.asyncio
 async def test_list_jobs_with_data(
-    async_client: AsyncClient, admin_token: str, test_db
+    async_client: AsyncClient, admin_token: str, test_db, test_admin_user
 ):
     """List jobs returns all jobs for tenant"""
-    # Create test jobs directly in database
-    from sqlalchemy import select
-    from app.database import AsyncSessionLocal
+    from sqlalchemy import text
 
-    async with AsyncSessionLocal() as db:
-        # Get tenant from admin token
-        result = await db.execute(select(User).where(User.email == "admin@test.com"))
-        admin_user = result.scalar_one()
+    # Set RLS context
+    await test_db.execute(
+        text(f"SET LOCAL app.current_tenant_id = '{test_admin_user.tenant_id}'")
+    )
 
-        # Set RLS context
-        from sqlalchemy import text
-
-        await db.execute(
-            text(f"SET LOCAL app.current_tenant_id = '{admin_user.tenant_id}'")
-        )
-
-        # Create jobs
-        job1 = Job(
-            title="Job 1",
-            tenant_id=admin_user.tenant_id,
-            scheduled_start=datetime(2026, 6, 1, 9, 0),
-        )
-        job2 = Job(
-            title="Job 2",
-            tenant_id=admin_user.tenant_id,
-            scheduled_start=datetime(2026, 6, 2, 9, 0),
-        )
-        db.add(job1)
-        db.add(job2)
-        await db.commit()
+    # Create jobs using test_db fixture session
+    job1 = Job(
+        title="Job 1",
+        tenant_id=test_admin_user.tenant_id,
+        scheduled_start=datetime(2026, 6, 1, 9, 0, tzinfo=timezone.utc),
+    )
+    job2 = Job(
+        title="Job 2",
+        tenant_id=test_admin_user.tenant_id,
+        scheduled_start=datetime(2026, 6, 2, 9, 0, tzinfo=timezone.utc),
+    )
+    test_db.add(job1)
+    test_db.add(job2)
+    await test_db.commit()
 
     response = await async_client.get(
-        "/api/v1/jobs",
+        "/api/v1/jobs/",
         headers={"Authorization": f"Bearer {admin_token}"},
     )
 
@@ -108,26 +100,22 @@ async def test_list_jobs_with_data(
 
 @pytest.mark.asyncio
 async def test_search_jobs_by_title(
-    async_client: AsyncClient, admin_token: str, test_db
+    async_client: AsyncClient, admin_token: str, test_db, test_admin_user
 ):
     """Search jobs by title using ILIKE"""
-    from sqlalchemy import select, text
-    from app.database import AsyncSessionLocal
+    from sqlalchemy import text
 
-    async with AsyncSessionLocal() as db:
-        result = await db.execute(select(User).where(User.email == "admin@test.com"))
-        admin_user = result.scalar_one()
-        await db.execute(
-            text(f"SET LOCAL app.current_tenant_id = '{admin_user.tenant_id}'")
-        )
+    await test_db.execute(
+        text(f"SET LOCAL app.current_tenant_id = '{test_admin_user.tenant_id}'")
+    )
 
-        job1 = Job(title="Corporate Event", tenant_id=admin_user.tenant_id)
-        job2 = Job(title="Wedding Reception", tenant_id=admin_user.tenant_id)
-        db.add_all([job1, job2])
-        await db.commit()
+    job1 = Job(title="Corporate Event", tenant_id=test_admin_user.tenant_id)
+    job2 = Job(title="Wedding Reception", tenant_id=test_admin_user.tenant_id)
+    test_db.add_all([job1, job2])
+    await test_db.commit()
 
     response = await async_client.get(
-        "/api/v1/jobs?search=corporate",
+        "/api/v1/jobs/?search=corporate",
         headers={"Authorization": f"Bearer {admin_token}"},
     )
 
@@ -139,26 +127,22 @@ async def test_search_jobs_by_title(
 
 @pytest.mark.asyncio
 async def test_filter_jobs_by_state(
-    async_client: AsyncClient, admin_token: str, test_db
+    async_client: AsyncClient, admin_token: str, test_db, test_admin_user
 ):
     """Filter jobs by state"""
-    from sqlalchemy import select, text
-    from app.database import AsyncSessionLocal
+    from sqlalchemy import text
 
-    async with AsyncSessionLocal() as db:
-        result = await db.execute(select(User).where(User.email == "admin@test.com"))
-        admin_user = result.scalar_one()
-        await db.execute(
-            text(f"SET LOCAL app.current_tenant_id = '{admin_user.tenant_id}'")
-        )
+    await test_db.execute(
+        text(f"SET LOCAL app.current_tenant_id = '{test_admin_user.tenant_id}'")
+    )
 
-        job1 = Job(title="Job 1", state=JobState.INTAKE, tenant_id=admin_user.tenant_id)
-        job2 = Job(title="Job 2", state=JobState.ACTIVE, tenant_id=admin_user.tenant_id)
-        db.add_all([job1, job2])
-        await db.commit()
+    job1 = Job(title="Job 1", state=JobState.INTAKE, tenant_id=test_admin_user.tenant_id)
+    job2 = Job(title="Job 2", state=JobState.ACTIVE, tenant_id=test_admin_user.tenant_id)
+    test_db.add_all([job1, job2])
+    await test_db.commit()
 
     response = await async_client.get(
-        "/api/v1/jobs?state=active",
+        "/api/v1/jobs/?state=active",
         headers={"Authorization": f"Bearer {admin_token}"},
     )
 
@@ -171,34 +155,30 @@ async def test_filter_jobs_by_state(
 
 @pytest.mark.asyncio
 async def test_filter_jobs_by_date_range(
-    async_client: AsyncClient, admin_token: str, test_db
+    async_client: AsyncClient, admin_token: str, test_db, test_admin_user
 ):
     """Filter jobs by date range"""
-    from sqlalchemy import select, text
-    from app.database import AsyncSessionLocal
+    from sqlalchemy import text
 
-    async with AsyncSessionLocal() as db:
-        result = await db.execute(select(User).where(User.email == "admin@test.com"))
-        admin_user = result.scalar_one()
-        await db.execute(
-            text(f"SET LOCAL app.current_tenant_id = '{admin_user.tenant_id}'")
-        )
+    await test_db.execute(
+        text(f"SET LOCAL app.current_tenant_id = '{test_admin_user.tenant_id}'")
+    )
 
-        job1 = Job(
-            title="Past Job",
-            scheduled_start=datetime(2026, 5, 1),
-            tenant_id=admin_user.tenant_id,
-        )
-        job2 = Job(
-            title="Future Job",
-            scheduled_start=datetime(2026, 7, 1),
-            tenant_id=admin_user.tenant_id,
-        )
-        db.add_all([job1, job2])
-        await db.commit()
+    job1 = Job(
+        title="Past Job",
+        scheduled_start=datetime(2026, 5, 1, tzinfo=timezone.utc),
+        tenant_id=test_admin_user.tenant_id,
+    )
+    job2 = Job(
+        title="Future Job",
+        scheduled_start=datetime(2026, 7, 1, tzinfo=timezone.utc),
+        tenant_id=test_admin_user.tenant_id,
+    )
+    test_db.add_all([job1, job2])
+    await test_db.commit()
 
     response = await async_client.get(
-        "/api/v1/jobs?start_date=2026-06-01T00:00:00Z",
+        "/api/v1/jobs/?start_date=2026-06-01T00:00:00Z",
         headers={"Authorization": f"Bearer {admin_token}"},
     )
 
@@ -209,23 +189,21 @@ async def test_filter_jobs_by_date_range(
 
 
 @pytest.mark.asyncio
-async def test_get_job_by_id(async_client: AsyncClient, admin_token: str, test_db):
+async def test_get_job_by_id(
+    async_client: AsyncClient, admin_token: str, test_db, test_admin_user
+):
     """Get single job by ID"""
-    from sqlalchemy import select, text
-    from app.database import AsyncSessionLocal
+    from sqlalchemy import text
 
-    async with AsyncSessionLocal() as db:
-        result = await db.execute(select(User).where(User.email == "admin@test.com"))
-        admin_user = result.scalar_one()
-        await db.execute(
-            text(f"SET LOCAL app.current_tenant_id = '{admin_user.tenant_id}'")
-        )
+    await test_db.execute(
+        text(f"SET LOCAL app.current_tenant_id = '{test_admin_user.tenant_id}'")
+    )
 
-        job = Job(title="Test Job", tenant_id=admin_user.tenant_id)
-        db.add(job)
-        await db.commit()
-        await db.refresh(job)
-        job_id = str(job.id)
+    job = Job(title="Test Job", tenant_id=test_admin_user.tenant_id)
+    test_db.add(job)
+    await test_db.commit()
+    await test_db.refresh(job)
+    job_id = str(job.id)
 
     response = await async_client.get(
         f"/api/v1/jobs/{job_id}",
@@ -257,24 +235,20 @@ async def test_get_job_not_found(async_client: AsyncClient, admin_token: str):
 
 @pytest.mark.asyncio
 async def test_update_job_as_admin(
-    async_client: AsyncClient, admin_token: str, test_db
+    async_client: AsyncClient, admin_token: str, test_db, test_admin_user
 ):
     """Admin can update job fields"""
-    from sqlalchemy import select, text
-    from app.database import AsyncSessionLocal
+    from sqlalchemy import text
 
-    async with AsyncSessionLocal() as db:
-        result = await db.execute(select(User).where(User.email == "admin@test.com"))
-        admin_user = result.scalar_one()
-        await db.execute(
-            text(f"SET LOCAL app.current_tenant_id = '{admin_user.tenant_id}'")
-        )
+    await test_db.execute(
+        text(f"SET LOCAL app.current_tenant_id = '{test_admin_user.tenant_id}'")
+    )
 
-        job = Job(title="Original Title", tenant_id=admin_user.tenant_id)
-        db.add(job)
-        await db.commit()
-        await db.refresh(job)
-        job_id = str(job.id)
+    job = Job(title="Original Title", tenant_id=test_admin_user.tenant_id)
+    test_db.add(job)
+    await test_db.commit()
+    await test_db.refresh(job)
+    job_id = str(job.id)
 
     response = await async_client.patch(
         f"/api/v1/jobs/{job_id}",
@@ -293,24 +267,20 @@ async def test_update_job_as_admin(
 
 @pytest.mark.asyncio
 async def test_delete_job_as_admin(
-    async_client: AsyncClient, admin_token: str, test_db
+    async_client: AsyncClient, admin_token: str, test_db, test_admin_user
 ):
     """Admin can delete jobs"""
-    from sqlalchemy import select, text
-    from app.database import AsyncSessionLocal
+    from sqlalchemy import text
 
-    async with AsyncSessionLocal() as db:
-        result = await db.execute(select(User).where(User.email == "admin@test.com"))
-        admin_user = result.scalar_one()
-        await db.execute(
-            text(f"SET LOCAL app.current_tenant_id = '{admin_user.tenant_id}'")
-        )
+    await test_db.execute(
+        text(f"SET LOCAL app.current_tenant_id = '{test_admin_user.tenant_id}'")
+    )
 
-        job = Job(title="Job to Delete", tenant_id=admin_user.tenant_id)
-        db.add(job)
-        await db.commit()
-        await db.refresh(job)
-        job_id = str(job.id)
+    job = Job(title="Job to Delete", tenant_id=test_admin_user.tenant_id)
+    test_db.add(job)
+    await test_db.commit()
+    await test_db.refresh(job)
+    job_id = str(job.id)
 
     response = await async_client.delete(
         f"/api/v1/jobs/{job_id}",
@@ -330,54 +300,54 @@ async def test_delete_job_as_admin(
 @pytest.mark.asyncio
 async def test_tenant_isolation(async_client: AsyncClient, test_db):
     """Jobs are isolated by tenant via RLS"""
-    from sqlalchemy import select, text
-    from app.database import AsyncSessionLocal
-    from app.core.security import create_access_token
+    from sqlalchemy import text
 
     # Create two tenants with jobs
-    async with AsyncSessionLocal() as db:
-        tenant1 = Tenant(name="Tenant 1")
-        tenant2 = Tenant(name="Tenant 2")
-        db.add_all([tenant1, tenant2])
-        await db.flush()
+    tenant1 = Tenant(name="Tenant 1")
+    tenant2 = Tenant(name="Tenant 2")
+    test_db.add_all([tenant1, tenant2])
+    await test_db.flush()
 
-        user1 = User(
-            email="user1@test.com",
-            hashed_password="fake",
-            tenant_id=tenant1.id,
-            role=UserRole.ADMIN,
-            is_active=True,
-        )
-        user2 = User(
-            email="user2@test.com",
-            hashed_password="fake",
-            tenant_id=tenant2.id,
-            role=UserRole.ADMIN,
-            is_active=True,
-        )
-        db.add_all([user1, user2])
-        await db.flush()
+    user1 = User(
+        email="user1@test.com",
+        hashed_password="fake",
+        tenant_id=tenant1.id,
+        role=UserRole.ADMIN,
+        is_active=True,
+    )
+    user2 = User(
+        email="user2@test.com",
+        hashed_password="fake",
+        tenant_id=tenant2.id,
+        role=UserRole.ADMIN,
+        is_active=True,
+    )
+    test_db.add_all([user1, user2])
+    await test_db.flush()
 
-        # Create jobs for each tenant
-        await db.execute(text(f"SET LOCAL app.current_tenant_id = '{tenant1.id}'"))
-        job1 = Job(title="Tenant 1 Job", tenant_id=tenant1.id)
-        db.add(job1)
+    # Create jobs for each tenant
+    job1 = Job(title="Tenant 1 Job", tenant_id=tenant1.id)
+    job2 = Job(title="Tenant 2 Job", tenant_id=tenant2.id)
+    test_db.add_all([job1, job2])
+    await test_db.commit()
 
-        await db.execute(text(f"SET LOCAL app.current_tenant_id = '{tenant2.id}'"))
-        job2 = Job(title="Tenant 2 Job", tenant_id=tenant2.id)
-        db.add(job2)
+    user1_id = str(user1.id)
+    tenant1_id = str(tenant1.id)
 
-        await db.commit()
-
-        user1_id = str(user1.id)
-        tenant1_id = str(tenant1.id)
+    # Enable RLS on jobs table AFTER data is inserted
+    await test_db.execute(text("ALTER TABLE jobs ENABLE ROW LEVEL SECURITY"))
+    await test_db.execute(text(
+        "CREATE POLICY tenant_isolation ON jobs "
+        "USING (tenant_id::text = current_setting('app.current_tenant_id', TRUE))"
+    ))
+    await test_db.execute(text("ALTER TABLE jobs FORCE ROW LEVEL SECURITY"))
 
     # Create token for tenant 1
     token1 = create_access_token(user1_id, tenant1_id, "admin")
 
     # Tenant 1 should only see their job
     response = await async_client.get(
-        "/api/v1/jobs",
+        "/api/v1/jobs/",
         headers={"Authorization": f"Bearer {token1}"},
     )
 

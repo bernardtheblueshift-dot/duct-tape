@@ -1,7 +1,7 @@
 import pytest
 import pytest_asyncio
 from sqlalchemy import select
-from app.models import User, InvitationToken, UserRole
+from app.models import User, Tenant, InvitationToken, UserRole
 
 
 @pytest.mark.asyncio
@@ -63,7 +63,7 @@ async def test_accept_invitation_expired_token_fails(
     async_client, test_db, test_admin_user, test_tenant
 ):
     """Accepting expired invitation returns 400"""
-    from datetime import datetime, timedelta
+    from datetime import datetime, timedelta, timezone
 
     # Create expired invitation
     invitation = InvitationToken(
@@ -72,7 +72,7 @@ async def test_accept_invitation_expired_token_fails(
         invited_by=test_admin_user.id,
         role=UserRole.CREW,
         token="expired_token_123",
-        expires_at=datetime.utcnow() - timedelta(days=1),  # Already expired
+        expires_at=datetime.now(timezone.utc) - timedelta(days=1),  # Already expired
     )
     test_db.add(invitation)
     await test_db.commit()

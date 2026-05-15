@@ -8,7 +8,7 @@ from app.core.security import hash_password
 @pytest.mark.asyncio
 async def test_rls_prevents_cross_tenant_access(test_db):
     """Verify RLS policies prevent cross-tenant data access"""
-    # Create two tenants with users
+    # Create two tenants with users (before RLS is enabled)
     tenant_a = Tenant(name="Tenant A", timezone="UTC")
     tenant_b = Tenant(name="Tenant B", timezone="UTC")
     test_db.add_all([tenant_a, tenant_b])
@@ -31,8 +31,19 @@ async def test_rls_prevents_cross_tenant_access(test_db):
     test_db.add_all([user_a, user_b])
     await test_db.commit()
 
+    tenant_a_id = str(tenant_a.id)
+    tenant_b_id = str(tenant_b.id)
+
+    # Enable RLS AFTER data is inserted
+    await test_db.execute(text("ALTER TABLE users ENABLE ROW LEVEL SECURITY"))
+    await test_db.execute(text(
+        "CREATE POLICY tenant_isolation ON users "
+        "USING (tenant_id::text = current_setting('app.current_tenant_id', TRUE))"
+    ))
+    await test_db.execute(text("ALTER TABLE users FORCE ROW LEVEL SECURITY"))
+
     # Set tenant context to Tenant A
-    await test_db.execute(text(f"SET LOCAL app.current_tenant_id = '{tenant_a.id}'"))
+    await test_db.execute(text(f"SET LOCAL app.current_tenant_id = '{tenant_a_id}'"))
 
     # Query users - should only return user_a
     result = await test_db.execute(select(User))
@@ -42,7 +53,7 @@ async def test_rls_prevents_cross_tenant_access(test_db):
     assert users[0].email == "usera@test.com"
 
     # Change tenant context to Tenant B
-    await test_db.execute(text(f"SET LOCAL app.current_tenant_id = '{tenant_b.id}'"))
+    await test_db.execute(text(f"SET LOCAL app.current_tenant_id = '{tenant_b_id}'"))
 
     # Query users - should only return user_b
     result = await test_db.execute(select(User))
@@ -68,6 +79,14 @@ async def test_rls_blocks_access_without_tenant_context(test_db):
     )
     test_db.add(user)
     await test_db.commit()
+
+    # Enable RLS AFTER data is inserted
+    await test_db.execute(text("ALTER TABLE users ENABLE ROW LEVEL SECURITY"))
+    await test_db.execute(text(
+        "CREATE POLICY tenant_isolation ON users "
+        "USING (tenant_id::text = current_setting('app.current_tenant_id', TRUE))"
+    ))
+    await test_db.execute(text("ALTER TABLE users FORCE ROW LEVEL SECURITY"))
 
     # Query without setting tenant context
     result = await test_db.execute(select(User))

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Response, Cookie
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from datetime import datetime
+from datetime import datetime, timezone
 import jwt
 
 from app.database import get_db
@@ -87,7 +87,7 @@ async def verify_email(request: VerifyEmailRequest, db: AsyncSession = Depends(g
     )
     token = result.scalar_one_or_none()
 
-    if not token or token.expires_at < datetime.utcnow():
+    if not token or token.expires_at < datetime.now(timezone.utc):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid or expired verification token",
@@ -281,7 +281,7 @@ async def reset_password(
     )
     token = result.scalar_one_or_none()
 
-    if not token or token.expires_at < datetime.utcnow():
+    if not token or token.expires_at < datetime.now(timezone.utc):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid or expired reset token",

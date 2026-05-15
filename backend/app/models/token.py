@@ -2,7 +2,7 @@ from sqlalchemy import Column, String, DateTime, ForeignKey, Enum
 from sqlalchemy.dialects.postgresql import UUID
 from app.models.base import Base, TenantMixin, TimestampMixin
 from app.models.user import UserRole
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import uuid
 import secrets
 
@@ -26,7 +26,7 @@ class VerificationToken(Base, TimestampMixin):
         return VerificationToken(
             user_id=user_id,
             token=VerificationToken.generate_token(),
-            expires_at=datetime.utcnow() + timedelta(hours=24),
+            expires_at=datetime.now(timezone.utc) + timedelta(hours=24),
         )
 
 
@@ -44,7 +44,7 @@ class PasswordResetToken(Base, TimestampMixin):
         return PasswordResetToken(
             user_id=user_id,
             token=secrets.token_urlsafe(32),
-            expires_at=datetime.utcnow() + timedelta(hours=1),
+            expires_at=datetime.now(timezone.utc) + timedelta(hours=1),
         )
 
 
@@ -73,5 +73,5 @@ class InvitationToken(Base, TenantMixin, TimestampMixin):
             invited_by=invited_by,
             role=role,
             token=secrets.token_urlsafe(32),
-            expires_at=datetime.utcnow() + timedelta(days=7),
+            expires_at=datetime.now(timezone.utc) + timedelta(days=7),
         )
