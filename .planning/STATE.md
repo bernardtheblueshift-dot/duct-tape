@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 03-04-PLAN.md
-last_updated: "2026-05-16T00:34:06.027Z"
+stopped_at: Completed 03-05-PLAN.md
+last_updated: "2026-05-16T00:41:12.220Z"
 progress:
   total_phases: 3
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 11
-  completed_plans: 10
+  completed_plans: 11
 ---
 
 # Project State: Duct Tape
@@ -21,18 +21,18 @@ progress:
 
 **Core Value**: When a job ignites, a production manager can instantly see who's available, what gear is free, and assign resources from one place
 
-**Current Focus**: Phase 2 (Job Management) — complete
+**Current Focus**: Phase 3 (Resource Management) — complete
 
 ## Current Position
 
-Phase: 03 (resource-management) — EXECUTING
-Plan: 5 of 5
+Phase: 03 (resource-management) — COMPLETE
+Plan: 5 of 5 (all plans executed)
 
 ### Phase Context
 
 Goal: Resource management with crew profiles, equipment inventory, and conflict detection
 
-Next action: Execute Plan 03-05 (Crew availability calendar endpoints)
+Next action: Begin Phase 04 (Calendar Management) planning
 
 ## Performance Metrics
 
@@ -55,6 +55,7 @@ Next action: Execute Plan 03-05 (Crew availability calendar endpoints)
 | Phase 03 P03 | 159 | 2 tasks | 3 files |
 | Phase 03 P03 | 159 | 2 tasks | 3 files |
 | Phase 03 P04 | 241 | 2 tasks | 5 files |
+| Phase 03 P05 | 196 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -90,6 +91,9 @@ Next action: Execute Plan 03-05 (Crew availability calendar endpoints)
 | Equipment conflicts are hard blocks with no override | Phase 3 P04 | 2026-05-16 | Cannot physically double-book equipment; prevents impossible promises to clients |
 | Batch query optimization for list_jobs assignments | Phase 3 P04 | 2026-05-16 | O(n) instead of O(n²) queries; critical for performance as job count scales |
 | Use str for status in CrewAssignmentSummary | Phase 3 P04 | 2026-05-16 | Avoids circular import between job.py and assignment.py schemas |
+| Cached rating aggregates on CrewProfile | Phase 3 P05 | 2026-05-16 | Avoids expensive AVG() query on every profile fetch; O(1) read vs O(n) aggregation |
+| DELETE all + INSERT for availability upsert | Phase 3 P05 | 2026-05-16 | Simpler than selective upsert, weekly patterns are small dataset (max 7 rows) |
+| Crew can set own availability, admin can set any | Phase 3 P05 | 2026-05-16 | Crew autonomy for personal scheduling, admin override for emergencies |
 
 ### Open Questions
 
@@ -115,30 +119,29 @@ Next action: Execute Plan 03-05 (Crew availability calendar endpoints)
 
 ## Session Continuity
 
-**Last session:** 2026-05-16T00:34:06.027Z
-**Stopped at:** Completed 03-04-PLAN.md
+**Last session:** 2026-05-16T00:41:12.216Z
+**Stopped at:** Completed 03-05-PLAN.md
 
 **What changed this session:**
 
-- Executed Plan 03-04: Assignment endpoints with conflict detection
-- Created assignments router with 7 endpoints (assign crew, assign equipment, transition, list, delete)
-- Crew assignments: pending/confirmed/declined workflow with state machine validation
-- Crew conflicts: warn + allow override with force=true and override_reason
-- Equipment assignments: direct assignment with hard availability blocking (no override)
-- Updated JobResponse schema with CrewAssignmentSummary and EquipmentAssignmentSummary
-- Modified get_job() and list_jobs() to populate assigned_crew and assigned_gear from database
-- Batch query optimization: O(n) instead of O(n²) for list endpoint
-- Created 12 integration tests covering full assignment lifecycle, conflict detection, permissions
-- Made 2 atomic commits (Task 1: assignment endpoints, Task 2: JobResponse + tests)
-- PostgreSQL unavailable: 54 tests written (10 conflicts + 19 crew + 13 equipment + 12 assignments) but not executed
+- Executed Plan 03-05: Crew ratings, availability patterns, and skills matrix
+- Added 6 new endpoints to crew router: rate_crew, list_ratings, get_crew_history, set_availability, get_availability, get_skills_matrix
+- Rating system: 1-5 stars with cached average update (rating_average/rating_count on CrewProfile)
+- Availability patterns: upsert-based weekly patterns (DELETE all + INSERT), crew can set own, admin can set any
+- Skills matrix: PostgreSQL unnest() for unique skill extraction, boolean mapping per crew member
+- Crew job history: joins CrewAssignment with Job table for role/status/dates
+- Created 17 integration tests across 3 files (test_ratings.py, test_availability.py, test_crew_matrix.py)
+- Made 2 atomic commits (Task 1: 6 endpoints, Task 2: 17 tests)
+- PostgreSQL unavailable: 71 tests written total (54 from previous plans + 17 new) but not executed
 
 **Context for next session:**
 
-- Phase 03 Plan 04 COMPLETE - assignment workflows fully operational
-- JobResponse now shows real crew and equipment assignments
-- Conflict detection integrated into assignment flow
-- Next: Plan 03-05 (Crew availability calendar endpoints) - final plan in Phase 03
-- Tests ready to run once PostgreSQL available (54 test functions total)
+- Phase 03 (Resource Management) COMPLETE - all 5 plans executed
+- Crew management: profiles, search/filter, ratings, availability, skills matrix
+- Equipment management: inventory, condition tracking, delete protection
+- Assignment workflows: crew/equipment assignment, conflict detection, state transitions
+- Next: Phase 04 (Calendar Management) - visual availability calendar, conflict highlighting, drag-drop scheduling
+- Tests ready to run once PostgreSQL available (71 test functions total across Phase 03)
 
 ---
 

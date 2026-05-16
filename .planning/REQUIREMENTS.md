@@ -32,10 +32,10 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **CREW-02**: Admin can edit and archive crew profiles
 - [x] **CREW-03**: Searchable crew directory filterable by role, skill, availability
 - [x] **CREW-04**: Crew can accept or decline job assignments (confirmation workflow)
-- [ ] **CREW-05**: Admin can rate crew reliability after each job
-- [ ] **CREW-06**: Crew profile shows reliability history and past jobs
-- [ ] **CREW-07**: Skills matrix view showing crew capabilities across skill tags
-- [ ] **CREW-08**: Crew can set recurring availability patterns (e.g., "unavailable Sundays")
+- [x] **CREW-05**: Admin can rate crew reliability after each job
+- [x] **CREW-06**: Crew profile shows reliability history and past jobs
+- [x] **CREW-07**: Skills matrix view showing crew capabilities across skill tags
+- [x] **CREW-08**: Crew can set recurring availability patterns (e.g., "unavailable Sundays")
 - [x] **CREW-09**: Crew availability auto-updates when assigned to jobs
 
 ### Equipment
@@ -168,10 +168,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CREW-02 | Phase 3 | Complete |
 | CREW-03 | Phase 3 | Complete |
 | CREW-04 | Phase 3 | Complete |
-| CREW-05 | Phase 3 | Pending |
-| CREW-06 | Phase 3 | Pending |
-| CREW-07 | Phase 3 | Pending |
-| CREW-08 | Phase 3 | Pending |
+| CREW-05 | Phase 3 | Complete |
+| CREW-06 | Phase 3 | Complete |
+| CREW-07 | Phase 3 | Complete |
+| CREW-08 | Phase 3 | Complete |
 | CREW-09 | Phase 3 | Complete |
 | EQUP-01 | Phase 3 | Complete |
 | EQUP-02 | Phase 3 | Complete |

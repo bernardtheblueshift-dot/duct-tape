@@ -9,7 +9,7 @@
 
 - [x] **Phase 1: Foundation & Multi-Tenancy** - Database, auth, tenant isolation with RLS (completed 2026-05-15)
 - [x] **Phase 2: Job Management** - Create, edit, search jobs with lifecycle states
-- [ ] **Phase 3: Resource Management** - Crew and equipment with conflict detection
+- [x] **Phase 3: Resource Management** - Crew and equipment with conflict detection (completed 2026-05-16)
 - [ ] **Phase 4: Calendar & Scheduling** - Visual calendar with availability views
 - [ ] **Phase 5: Coordination Layer (Messaging + Tasks + Files)** - Job-scoped collaboration tools
 - [ ] **Phase 6: Notifications** - Email alerts for assignments and updates
