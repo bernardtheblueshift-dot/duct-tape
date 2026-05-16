@@ -19,6 +19,8 @@ dependencies = [
     "redis==7.4.0",
     "celery==5.6.3",
     "icalendar==7.1.0",
+    "aiofiles>=0.24.0",
+    "python-magic>=0.4.27",
 ]
 
 [project.optional-dependencies]
