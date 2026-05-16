@@ -58,8 +58,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **MSG-01**: Threaded messaging per job (Slack-like channels scoped to each job)
 - [x] **MSG-02**: Messages support text with basic formatting
-- [ ] **MSG-03**: Message history is searchable within a job
-- [ ] **MSG-04**: Real-time message delivery via WebSockets
+- [x] **MSG-03**: Message history is searchable within a job
+- [x] **MSG-04**: Real-time message delivery via WebSockets
 
 ### Task Management
 
@@ -185,8 +185,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SCHED-06 | Phase 4 | Complete |
 | MSG-01 | Phase 5 | Complete |
 | MSG-02 | Phase 5 | Complete |
-| MSG-03 | Phase 5 | Pending |
-| MSG-04 | Phase 5 | Pending |
+| MSG-03 | Phase 5 | Complete |
+| MSG-04 | Phase 5 | Complete |
 | TASK-01 | Phase 5 | Complete |
 | TASK-02 | Phase 5 | Complete |
 | TASK-03 | Phase 5 | Complete |

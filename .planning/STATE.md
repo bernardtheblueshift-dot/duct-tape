@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 05-01-PLAN.md
-last_updated: "2026-05-16T07:44:01.506Z"
+stopped_at: Completed 05-02-PLAN.md
+last_updated: "2026-05-16T07:52:00.000Z"
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 19
-  completed_plans: 15
+  completed_plans: 16
 ---
 
 # Project State: Duct Tape
@@ -26,7 +26,7 @@ progress:
 ## Current Position
 
 Phase: 05 (coordination-layer) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5
 
 ### Phase Context
 
@@ -60,6 +60,7 @@ Next action: Plan Phase 05 (Coordination Tools)
 | Phase 04 P02 | 219 | 2 tasks | 2 files |
 | Phase 04 P03 | 176 | 2 tasks | 4 files |
 | Phase 05 P01 | 194 | 3 tasks | 13 files |
+| Phase 05 P02 | 147 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -113,6 +114,9 @@ Next action: Plan Phase 05 (Coordination Tools)
 | Bidirectional task state transitions | Phase 5 P01 | 2026-05-16 | TODO <-> IN_PROGRESS <-> DONE for workflow flexibility; tasks can be paused and reopened |
 | Tenant-isolated file storage with MIME validation | Phase 5 P01 | 2026-05-16 | uploads/tenant_id/job_id/file_id.ext prevents cross-tenant access; python-magic validates file content not client headers |
 | WebSocket manager singleton | Phase 5 P01 | 2026-05-16 | Global ConnectionManager for real-time job updates with user subscriptions; single source of truth for connections |
+| Crew can post and read messages | Phase 5 P02 | 2026-05-16 | Crew need full participation in job discussions, not just read-only; enables collaboration |
+| JWT token in WebSocket query param | Phase 5 P02 | 2026-05-16 | WebSocket cannot send Authorization headers; query param is standard pattern for WebSocket auth |
+| Fire-and-forget subscribe/unsubscribe | Phase 5 P02 | 2026-05-16 | Subscriptions are client state management, no server response needed; avoids unnecessary round-trips |
 
 ### Open Questions
 
@@ -138,29 +142,29 @@ Next action: Plan Phase 05 (Coordination Tools)
 
 ## Session Continuity
 
-**Last session:** 2026-05-16T07:44:01.502Z
-**Stopped at:** Completed 05-01-PLAN.md
+**Last session:** 2026-05-16T07:52:00.000Z
+**Stopped at:** Completed 05-02-PLAN.md
 
 **What changed this session:**
 
-- Executed Plan 04-03: iCal feed generation and token management
-- Created RFC 5545 compliant iCal feed generator in app/core/icalendar.py
-- Public feed endpoint GET /ical/{token}.ics (no auth required for calendar app compatibility)
-- Admin token management API: POST/GET/DELETE /api/v1/ical/tokens/*
-- Dual router pattern: feed_router for public endpoint, router for admin endpoints
-- Feed content: only CONFIRMED assignments, "Role - Job Title" summary format
-- Cache-Control: no-cache prevents stale calendar reads
-- Status code 410 for expired tokens (distinct from 404 invalid)
-- Created 14 integration tests (5 unit, 9 integration) in test_ical.py
-- Made 2 atomic commits (Task 1: feed + endpoints, Task 2: tests)
-- 1 auto-fix: import path correction (crew_profile vs crew module)
+- Executed Plan 05-02: Message API and WebSocket broadcast
+- Created REST API for job-scoped threaded messaging: POST/GET list/GET single at /api/v1/jobs/{job_id}/messages
+- GET supports ILIKE search with case-insensitive substring matching
+- Messages ordered oldest-first (chat-style chronological flow)
+- WebSocket endpoint /ws with JWT auth via query param (WebSocket cannot send headers)
+- Subscribe/unsubscribe/ping actions for WebSocket protocol
+- ConnectionManager broadcasts new messages to all subscribed WebSocket clients
+- Both admin and crew can post and read messages (require_active)
+- Created 18 integration tests (11 message tests, 7 WebSocket tests) in test_messages.py and test_websocket.py
+- Made 2 atomic commits (Task 1: API + WebSocket, Task 2: tests)
+- No deviations: plan executed exactly as written
 
 **Context for next session:**
 
-- Phase 04 (Calendar & Scheduling) COMPLETE - all 3 plans shipped
-- Calendar events API, availability expansion, and iCal feed subscription all working
-- Next: Plan Phase 05 (Coordination Tools: messaging, tasks, files)
-- Tests ready to run once PostgreSQL available (104 test functions total: 71 from Phase 03 + 10 from P04-01 + 9 from P04-02 + 14 from P04-03)
+- Phase 05 Plan 02 COMPLETE - messaging and real-time broadcast working
+- Plan 05-01 (task state, file upload) and 05-02 (message API, WebSocket) shipped
+- Next: Plan 05-03 (task assignments and integration)
+- Tests ready to run once PostgreSQL available (122 test functions total: 104 from previous + 18 from P05-02)
 
 ---
 
