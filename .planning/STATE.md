@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 05-04-PLAN.md
-last_updated: "2026-05-16T08:00:20.691Z"
+stopped_at: Completed 05-05-PLAN.md
+last_updated: "2026-05-16T08:06:40.260Z"
 progress:
   total_phases: 5
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 19
-  completed_plans: 18
+  completed_plans: 19
 ---
 
 # Project State: Duct Tape
@@ -25,14 +25,16 @@ progress:
 
 ## Current Position
 
-Phase: 05 (coordination-layer) — EXECUTING
-Plan: 5 of 5
+Phase: 05 (coordination-layer) — COMPLETE
+Plan: 5 of 5 — ALL PLANS SHIPPED
 
 ### Phase Context
 
-Goal: Calendar management with events, availability, and iCal feeds
+Goal: Coordination tools - messages, tasks, files, and job summary enrichment
 
-Next action: Plan Phase 05 (Coordination Tools)
+Status: Phase 05 complete with all 5 plans shipped (messages, tasks, files, WebSocket, job coordination summary)
+
+Next action: Begin Phase 06 planning or start integration testing
 
 ## Performance Metrics
 
@@ -65,6 +67,7 @@ Next action: Plan Phase 05 (Coordination Tools)
 | Phase 05 P03 | 151 | 2 tasks | 4 files |
 | Phase 05 P04 | 143 | 2 tasks | 3 files |
 | Phase 05 P04 | 143 | 2 tasks | 3 files |
+| Phase 05 P05 | 184 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -125,6 +128,10 @@ Next action: Plan Phase 05 (Coordination Tools)
 | Priority ordering via case() expression | Phase 5 P03 | 2026-05-16 | TaskPriority enum has no inherent order; manual mapping needed for urgent > high > medium > low |
 | Dual router pattern for files | Phase 5 P04 | 2026-05-16 | Job-scoped for upload/list, file-scoped for serve/delete; prevents redundant job_id in download URLs |
 | Delete DB record first, then disk file | Phase 5 P04 | 2026-05-16 | Prevents orphaned DB records; if disk deletion fails, metadata already cleaned up |
+| Typed summary objects for coordination data | Phase 5 P05 | 2026-05-16 | MessageSummary/TaskSummary/FileSummary provide type safety and clear contracts vs raw dicts |
+| Batch queries for list view coordination summaries | Phase 5 P05 | 2026-05-16 | O(1) queries per resource type prevents N+1 problem; critical for performance as job count scales |
+| Skip recent items in list view | Phase 5 P05 | 2026-05-16 | Recent messages/files expensive for N jobs; counts-only sufficient for list, full data in detail view |
+| Overdue tasks exclude DONE status | Phase 5 P05 | 2026-05-16 | Deadline < now AND status != DONE ensures completed tasks don't count as overdue |
 
 ### Open Questions
 
@@ -150,30 +157,28 @@ Next action: Plan Phase 05 (Coordination Tools)
 
 ## Session Continuity
 
-**Last session:** 2026-05-16T08:00:20.687Z
-**Stopped at:** Completed 05-04-PLAN.md
+**Last session:** 2026-05-16T08:02:29Z
+**Stopped at:** Completed 05-05-PLAN.md
 
 **What changed this session:**
 
-- Executed Plan 05-04: File Upload and Management API
-- Created dual router pattern: job-scoped (upload/list) and file-scoped (serve/delete)
-- POST /api/v1/jobs/{job_id}/files uploads with server-side MIME validation via python-magic
-- GET /api/v1/files/{file_id}/download serves files with correct Content-Type header
-- DELETE /api/v1/files/{file_id} removes both DB record and disk file (admin only)
-- 5 endpoints total: upload_file, list_files, get_file_metadata, serve_file, delete_file_endpoint
-- Storage: uploads/{tenant_id}/{job_id}/{file_id}.ext with UUID filenames
-- Security: RLS tenant isolation, 100MB size limit, MIME validation
-- Permissions: require_active for upload/view, require_admin for delete
-- Created 14 integration tests mocking save_upload to avoid filesystem dependencies
-- Made 2 atomic commits (Task 1: API, Task 2: tests)
+- Executed Plan 05-05: Job Coordination Summary
+- Replaced placeholder messages/tasks/files lists with typed CoordinationSummary in JobResponse
+- Added 4 new summary schemas: MessageSummary, TaskSummary, FileSummary, CoordinationSummary
+- GET /api/v1/jobs/{id} returns full coordination data: message_count + 3 recent messages, task counts by status + overdue count, file_count + 3 recent files
+- GET /api/v1/jobs list uses batch queries for O(1) performance per resource type (not O(n))
+- PATCH /api/v1/jobs/{id} and POST /api/v1/jobs/{id}/transition also return enriched coordination data
+- Overdue tasks calculated as deadline < now AND status != DONE
+- List view skips recent items (counts only) for performance
+- Made 2 atomic commits (Task 1: schema, Task 2: enrichment)
 - No deviations: plan executed exactly as written
 
 **Context for next session:**
 
-- Phase 05 Plan 04 COMPLETE - file upload/serving API fully functional
-- Plans 05-01 through 05-04 shipped (task state, file models, messages, WebSocket, tasks, files)
-- Next: Plan 05-05 (final coordination layer plan) or Phase 06
-- Tests ready to run once PostgreSQL available (159 test functions total: 145 from previous + 14 from P05-04)
+- Phase 05 COMPLETE - all 5 coordination layer plans shipped
+- Plans 05-01 through 05-05 complete: messages, tasks, files, WebSocket, job coordination summary
+- Next: Begin Phase 06 planning or start integration testing
+- Tests ready to run once PostgreSQL available
 
 ---
 
