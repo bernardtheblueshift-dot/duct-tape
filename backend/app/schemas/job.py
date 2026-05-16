@@ -27,6 +27,56 @@ class EquipmentAssignmentSummary(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class MessageSummary(BaseModel):
+    """Summary of message for embedding in CoordinationSummary"""
+
+    id: UUID
+    user_id: UUID
+    content: str
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class TaskSummary(BaseModel):
+    """Summary of task for embedding in CoordinationSummary"""
+
+    id: UUID
+    title: str
+    status: str  # Use str to avoid importing TaskStatus (same pattern as CrewAssignmentSummary)
+    priority: str
+    assignee_id: UUID | None
+    deadline: datetime | None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class FileSummary(BaseModel):
+    """Summary of file for embedding in CoordinationSummary"""
+
+    id: UUID
+    original_filename: str
+    mime_type: str
+    file_size: int
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CoordinationSummary(BaseModel):
+    """Summary of coordination data (messages, tasks, files) for embedding in JobResponse"""
+
+    message_count: int = 0
+    recent_messages: list[MessageSummary] = []
+    task_total: int = 0
+    task_todo: int = 0
+    task_in_progress: int = 0
+    task_done: int = 0
+    task_overdue: int = 0
+    file_count: int = 0
+    recent_files: list[FileSummary] = []
+
+
 class JobCreate(BaseModel):
     """Request schema for creating job"""
 
@@ -64,10 +114,8 @@ class JobResponse(BaseModel):
     # Phase 3: Resource Management - populated with real data
     assigned_crew: list[CrewAssignmentSummary] = []
     assigned_gear: list[EquipmentAssignmentSummary] = []
-    # Placeholder sections for future phases (JOBS-06)
-    messages: list = []  # Phase 5: Coordination Layer
-    tasks: list = []  # Phase 5: Coordination Layer
-    files: list = []  # Phase 5: Coordination Layer
+    # Phase 5: Coordination Layer - real summary data
+    coordination: CoordinationSummary = CoordinationSummary()
 
     model_config = ConfigDict(from_attributes=True)
 
