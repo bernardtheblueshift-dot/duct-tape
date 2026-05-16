@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
-from app.api.v1 import auth, invitations, jobs, crew, equipment, assignments, calendar
+from app.api.v1 import auth, invitations, jobs, crew, equipment, assignments, calendar, ical
 
 # Create FastAPI application
 app = FastAPI(
@@ -27,6 +27,8 @@ app.include_router(crew.router)
 app.include_router(equipment.router)
 app.include_router(assignments.router)
 app.include_router(calendar.router)
+app.include_router(ical.router)  # Admin token management
+app.include_router(ical.feed_router)  # Public feed endpoint
 
 
 @app.get("/health")
