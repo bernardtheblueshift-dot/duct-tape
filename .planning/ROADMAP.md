@@ -10,7 +10,7 @@
 - [x] **Phase 1: Foundation & Multi-Tenancy** - Database, auth, tenant isolation with RLS (completed 2026-05-15)
 - [x] **Phase 2: Job Management** - Create, edit, search jobs with lifecycle states
 - [x] **Phase 3: Resource Management** - Crew and equipment with conflict detection (completed 2026-05-16)
-- [ ] **Phase 4: Calendar & Scheduling** - Visual calendar with availability views
+- [x] **Phase 4: Calendar & Scheduling** - Visual calendar with availability views (completed 2026-05-16)
 - [ ] **Phase 5: Coordination Layer (Messaging + Tasks + Files)** - Job-scoped collaboration tools
 - [ ] **Phase 6: Notifications** - Email alerts for assignments and updates
 - [ ] **Phase 7: Crew Portal** - Crew-facing views and booking confirmations
@@ -118,6 +118,6 @@ Plans:
 Plans:
 - [x] 04-01-PLAN.md — Schemas, ICalToken model, migration, calendar events + per-resource endpoints (Wave 1) ✓
 - [x] 04-02-PLAN.md — Crew availability expansion + bulk admin summary endpoints (Wave 2) ✓
-- [ ] 04-03-PLAN.md — iCal feed generation + token management endpoints (Wave 2)
+- [x] 04-03-PLAN.md — iCal feed generation + token management endpoints (Wave 2) ✓
 
 ---

@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Phase 4 context gathered
-last_updated: "2026-05-16T01:42:45.000Z"
+stopped_at: Completed Phase 04 Plan 03
+last_updated: "2026-05-16T01:48:25.000Z"
 progress:
   total_phases: 4
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 14
-  completed_plans: 13
+  completed_plans: 14
 ---
 
 # Project State: Duct Tape
@@ -25,14 +25,14 @@ progress:
 
 ## Current Position
 
-Phase: 04 (calendar-scheduling) — EXECUTING
-Plan: 3 of 3
+Phase: 04 (calendar-scheduling) — COMPLETE
+Plan: 3 of 3 (all plans complete)
 
 ### Phase Context
 
 Goal: Calendar management with events, availability, and iCal feeds
 
-Next action: Execute Phase 04 Plan 03 (iCal feed generation)
+Next action: Plan Phase 05 (Coordination Tools)
 
 ## Performance Metrics
 
@@ -58,6 +58,7 @@ Next action: Execute Phase 04 Plan 03 (iCal feed generation)
 | Phase 03 P05 | 196 | 2 tasks | 4 files |
 | Phase 04 P01 | 282 | 3 tasks | 8 files |
 | Phase 04 P02 | 219 | 2 tasks | 2 files |
+| Phase 04 P03 | 176 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -104,6 +105,10 @@ Next action: Execute Phase 04 Plan 03 (iCal feed generation)
 | Batch queries for bulk availability | Phase 4 P02 | 2026-05-16 | Single query per resource type prevents N+1 as crew count scales |
 | Only CONFIRMED assignments count as booked | Phase 4 P02 | 2026-05-16 | PENDING/DECLINED should not block availability; clearer availability picture |
 | Status priority: unavailable > booked > free | Phase 4 P02 | 2026-05-16 | Unavailable patterns override bookings (crew can't work those days anyway) |
+| Public feed endpoint has no auth dependency | Phase 4 P03 | 2026-05-16 | Calendar apps can't send Authorization headers; token-in-URL is iCal subscription standard |
+| Dual router pattern for public + admin endpoints | Phase 4 P03 | 2026-05-16 | Separate /ical/ (public feed) from /api/v1/ical/ (admin token management) for clear prefix distinction |
+| Status 410 for expired tokens | Phase 4 P03 | 2026-05-16 | Distinct from 404 (invalid); signals to calendar apps that subscription was valid but no longer accessible |
+| Cache-Control: no-cache on feed | Phase 4 P03 | 2026-05-16 | Prevents calendar apps from serving stale data; ensures crew see updated assignments |
 
 ### Open Questions
 
@@ -129,28 +134,29 @@ Next action: Execute Phase 04 Plan 03 (iCal feed generation)
 
 ## Session Continuity
 
-**Last session:** 2026-05-16T01:42:45Z
-**Stopped at:** Completed Phase 04 Plan 02
+**Last session:** 2026-05-16T01:48:25Z
+**Stopped at:** Completed Phase 04 Plan 03
 
 **What changed this session:**
 
-- Executed Plan 04-02: Crew availability expansion endpoints
-- Created 2 REST endpoints: GET /calendar/crew/{id}/availability, GET /calendar/availability
-- Per-crew endpoint: day-by-day status expansion (free/booked/unavailable)
-- Bulk endpoint: admin-only summary for all active crew
-- Weekly patterns expanded server-side into concrete date lists
-- Batch query optimization: .in_() queries to avoid N+1 (O(n) performance)
-- Status priority logic: unavailable > booked > free
-- Only CONFIRMED assignments count as booked (PENDING/DECLINED excluded)
-- Archived crew filtered from bulk endpoint
-- Created 9 integration tests in test_calendar_availability.py
-- Made 2 atomic commits (Task 1: endpoints, Task 2: tests)
+- Executed Plan 04-03: iCal feed generation and token management
+- Created RFC 5545 compliant iCal feed generator in app/core/icalendar.py
+- Public feed endpoint GET /ical/{token}.ics (no auth required for calendar app compatibility)
+- Admin token management API: POST/GET/DELETE /api/v1/ical/tokens/*
+- Dual router pattern: feed_router for public endpoint, router for admin endpoints
+- Feed content: only CONFIRMED assignments, "Role - Job Title" summary format
+- Cache-Control: no-cache prevents stale calendar reads
+- Status code 410 for expired tokens (distinct from 404 invalid)
+- Created 14 integration tests (5 unit, 9 integration) in test_ical.py
+- Made 2 atomic commits (Task 1: feed + endpoints, Task 2: tests)
+- 1 auto-fix: import path correction (crew_profile vs crew module)
 
 **Context for next session:**
 
-- Phase 04 Plan 02 COMPLETE - availability endpoints ready
-- Next: Plan 04-03 (iCal feed generation + token management)
-- Tests ready to run once PostgreSQL available (90 test functions total: 71 from Phase 03 + 10 from Phase 04 P01 + 9 from Phase 04 P02)
+- Phase 04 (Calendar & Scheduling) COMPLETE - all 3 plans shipped
+- Calendar events API, availability expansion, and iCal feed subscription all working
+- Next: Plan Phase 05 (Coordination Tools: messaging, tasks, files)
+- Tests ready to run once PostgreSQL available (104 test functions total: 71 from Phase 03 + 10 from P04-01 + 9 from P04-02 + 14 from P04-03)
 
 ---
 

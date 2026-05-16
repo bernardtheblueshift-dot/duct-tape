@@ -52,7 +52,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **SCHED-03**: Day view showing detailed schedule per resource
 - [x] **SCHED-04**: Crew availability visible on calendar (free, booked, unavailable)
 - [x] **SCHED-05**: Conflict detection prevents double-booking crew across overlapping jobs
-- [ ] **SCHED-06**: Calendar export via iCal for crew to sync with personal calendars
+- [x] **SCHED-06**: Calendar export via iCal for crew to sync with personal calendars
 
 ### Messaging
 
@@ -182,7 +182,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SCHED-03 | Phase 4 | Complete |
 | SCHED-04 | Phase 4 | Complete |
 | SCHED-05 | Phase 3 | Complete |
-| SCHED-06 | Phase 4 | Pending |
+| SCHED-06 | Phase 4 | Complete |
 | MSG-01 | Phase 5 | Pending |
 | MSG-02 | Phase 5 | Pending |
 | MSG-03 | Phase 5 | Pending |
