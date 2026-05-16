@@ -109,3 +109,35 @@ async def crew_token(test_crew_user):
         str(test_crew_user.tenant_id),
         test_crew_user.role.value,
     )
+
+
+@pytest_asyncio.fixture
+async def test_crew_profile(test_db, test_crew_user, test_tenant):
+    from app.models import CrewProfile
+    profile = CrewProfile(
+        user_id=test_crew_user.id,
+        tenant_id=test_tenant.id,
+        phone="+1234567890",
+        bio="Experienced camera operator",
+        hourly_rate=50.00,
+        skills=["Camera", "Lighting"],
+    )
+    test_db.add(profile)
+    await test_db.flush()
+    return profile
+
+
+@pytest_asyncio.fixture
+async def test_job(test_db, test_tenant):
+    from app.models import Job, JobState
+    from datetime import datetime, timezone
+    job = Job(
+        title="Test Event",
+        tenant_id=test_tenant.id,
+        scheduled_start=datetime(2026, 6, 1, 9, 0, tzinfo=timezone.utc),
+        scheduled_end=datetime(2026, 6, 1, 17, 0, tzinfo=timezone.utc),
+        state=JobState.ACTIVE,
+    )
+    test_db.add(job)
+    await test_db.flush()
+    return job
