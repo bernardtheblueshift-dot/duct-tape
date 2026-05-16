@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 03-03-PLAN.md
-last_updated: "2026-05-16T00:26:07.750Z"
+stopped_at: Completed 03-04-PLAN.md
+last_updated: "2026-05-16T00:34:06.027Z"
 progress:
   total_phases: 3
   completed_phases: 2
   total_plans: 11
-  completed_plans: 9
+  completed_plans: 10
 ---
 
 # Project State: Duct Tape
@@ -26,13 +26,13 @@ progress:
 ## Current Position
 
 Phase: 03 (resource-management) — EXECUTING
-Plan: 4 of 5
+Plan: 5 of 5
 
 ### Phase Context
 
 Goal: Resource management with crew profiles, equipment inventory, and conflict detection
 
-Next action: Execute Plan 03-04 (Assignment endpoints with conflict detection)
+Next action: Execute Plan 03-05 (Crew availability calendar endpoints)
 
 ## Performance Metrics
 
@@ -54,6 +54,7 @@ Next action: Execute Plan 03-04 (Assignment endpoints with conflict detection)
 | Phase 03 P02 | 226 | 2 tasks | 6 files |
 | Phase 03 P03 | 159 | 2 tasks | 3 files |
 | Phase 03 P03 | 159 | 2 tasks | 3 files |
+| Phase 03 P04 | 241 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -83,6 +84,12 @@ Next action: Execute Plan 03-04 (Assignment endpoints with conflict detection)
 | ILIKE search across name and notes for equipment inventory | Phase 3 P03 | 2026-05-16 | Simple text search sufficient for v1, can upgrade to PostgreSQL full-text search if needed |
 | Delete protection via assignment check prevents orphaned data | Phase 3 P03 | 2026-05-16 | Prevents deleting equipment still assigned to jobs |
 | Dedicated /condition endpoint for quick status updates | Phase 3 P03 | 2026-05-16 | Enables quick status changes without requiring full PATCH payload |
+| Crew assignments have pending/confirmed/declined workflow | Phase 3 P04 | 2026-05-16 | Enables crew autonomy to accept/reject work; admin oversight via force override |
+| Equipment assignments are direct without confirmation | Phase 3 P04 | 2026-05-16 | Equipment doesn't need to consent; simpler workflow for gear allocation |
+| Crew conflicts warn with force override option | Phase 3 P04 | 2026-05-16 | Admin needs flexibility for high-value assignments; override_reason creates audit trail |
+| Equipment conflicts are hard blocks with no override | Phase 3 P04 | 2026-05-16 | Cannot physically double-book equipment; prevents impossible promises to clients |
+| Batch query optimization for list_jobs assignments | Phase 3 P04 | 2026-05-16 | O(n) instead of O(n²) queries; critical for performance as job count scales |
+| Use str for status in CrewAssignmentSummary | Phase 3 P04 | 2026-05-16 | Avoids circular import between job.py and assignment.py schemas |
 
 ### Open Questions
 
@@ -108,28 +115,30 @@ Next action: Execute Plan 03-04 (Assignment endpoints with conflict detection)
 
 ## Session Continuity
 
-**Last session:** 2026-05-16T00:26:07.746Z
-**Stopped at:** Completed 03-03-PLAN.md
+**Last session:** 2026-05-16T00:34:06.027Z
+**Stopped at:** Completed 03-04-PLAN.md
 
 **What changed this session:**
 
-- Executed Plan 03-03: Equipment CRUD endpoints
-- Created equipment router with 6 endpoints (create, list/search, get, update, delete, condition)
-- Search supports name/notes ILIKE, category filter, condition filter
-- Delete protection via EquipmentAssignment check (returns 409 if assignments exist)
-- Dedicated /condition endpoint for quick status updates
-- Registered equipment router in main.py
-- Created 13 integration tests covering full CRUD lifecycle, search, filtering, permissions, status tracking
-- Made 2 atomic commits (Task 1: equipment CRUD, Task 2: equipment tests)
-- PostgreSQL unavailable: 42 tests written (10 conflicts unit tests + 19 crew integration tests + 13 equipment integration tests) but not executed
+- Executed Plan 03-04: Assignment endpoints with conflict detection
+- Created assignments router with 7 endpoints (assign crew, assign equipment, transition, list, delete)
+- Crew assignments: pending/confirmed/declined workflow with state machine validation
+- Crew conflicts: warn + allow override with force=true and override_reason
+- Equipment assignments: direct assignment with hard availability blocking (no override)
+- Updated JobResponse schema with CrewAssignmentSummary and EquipmentAssignmentSummary
+- Modified get_job() and list_jobs() to populate assigned_crew and assigned_gear from database
+- Batch query optimization: O(n) instead of O(n²) for list endpoint
+- Created 12 integration tests covering full assignment lifecycle, conflict detection, permissions
+- Made 2 atomic commits (Task 1: assignment endpoints, Task 2: JobResponse + tests)
+- PostgreSQL unavailable: 54 tests written (10 conflicts + 19 crew + 13 equipment + 12 assignments) but not executed
 
 **Context for next session:**
 
-- Phase 03 Plan 03 COMPLETE - equipment inventory management operational
-- Equipment CRUD ready for use by assignment endpoints (Plan 03-04)
-- Test fixtures available (test_crew_profile, test_job, test_equipment via conftest)
-- Next: Plan 03-04 (Assignment endpoints with conflict detection integration)
-- Tests ready to run once PostgreSQL available (42 test functions across test_conflicts.py + test_crew_crud.py + test_equipment_crud.py)
+- Phase 03 Plan 04 COMPLETE - assignment workflows fully operational
+- JobResponse now shows real crew and equipment assignments
+- Conflict detection integrated into assignment flow
+- Next: Plan 03-05 (Crew availability calendar endpoints) - final plan in Phase 03
+- Tests ready to run once PostgreSQL available (54 test functions total)
 
 ---
 

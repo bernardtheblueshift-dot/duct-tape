@@ -31,18 +31,18 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **CREW-01**: Admin can create crew profiles (name, role, skills, rate, contact details)
 - [x] **CREW-02**: Admin can edit and archive crew profiles
 - [x] **CREW-03**: Searchable crew directory filterable by role, skill, availability
-- [ ] **CREW-04**: Crew can accept or decline job assignments (confirmation workflow)
+- [x] **CREW-04**: Crew can accept or decline job assignments (confirmation workflow)
 - [ ] **CREW-05**: Admin can rate crew reliability after each job
 - [ ] **CREW-06**: Crew profile shows reliability history and past jobs
 - [ ] **CREW-07**: Skills matrix view showing crew capabilities across skill tags
 - [ ] **CREW-08**: Crew can set recurring availability patterns (e.g., "unavailable Sundays")
-- [ ] **CREW-09**: Crew availability auto-updates when assigned to jobs
+- [x] **CREW-09**: Crew availability auto-updates when assigned to jobs
 
 ### Equipment
 
 - [x] **EQUP-01**: Admin can add equipment to inventory (name, category, quantity, condition)
-- [ ] **EQUP-02**: Admin can assign equipment to jobs
-- [ ] **EQUP-03**: Equipment conflict detection prevents double-booking gear
+- [x] **EQUP-02**: Admin can assign equipment to jobs
+- [x] **EQUP-03**: Equipment conflict detection prevents double-booking gear
 - [x] **EQUP-04**: Equipment status tracking (available, assigned, maintenance)
 
 ### Calendar & Scheduling
@@ -167,15 +167,15 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CREW-01 | Phase 3 | Complete |
 | CREW-02 | Phase 3 | Complete |
 | CREW-03 | Phase 3 | Complete |
-| CREW-04 | Phase 3 | Pending |
+| CREW-04 | Phase 3 | Complete |
 | CREW-05 | Phase 3 | Pending |
 | CREW-06 | Phase 3 | Pending |
 | CREW-07 | Phase 3 | Pending |
 | CREW-08 | Phase 3 | Pending |
-| CREW-09 | Phase 3 | Pending |
+| CREW-09 | Phase 3 | Complete |
 | EQUP-01 | Phase 3 | Complete |
-| EQUP-02 | Phase 3 | Pending |
-| EQUP-03 | Phase 3 | Pending |
+| EQUP-02 | Phase 3 | Complete |
+| EQUP-03 | Phase 3 | Complete |
 | EQUP-04 | Phase 3 | Complete |
 | SCHED-01 | Phase 4 | Pending |
 | SCHED-02 | Phase 4 | Pending |
