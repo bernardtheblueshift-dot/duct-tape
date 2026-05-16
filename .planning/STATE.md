@@ -4,12 +4,12 @@ milestone: v1.0
 milestone_name: milestone
 status: unknown
 stopped_at: Phase 4 context gathered
-last_updated: "2026-05-16T01:36:06.994Z"
+last_updated: "2026-05-16T01:42:45.000Z"
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 14
-  completed_plans: 12
+  completed_plans: 13
 ---
 
 # Project State: Duct Tape
@@ -26,13 +26,13 @@ progress:
 ## Current Position
 
 Phase: 04 (calendar-scheduling) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 
 ### Phase Context
 
-Goal: Resource management with crew profiles, equipment inventory, and conflict detection
+Goal: Calendar management with events, availability, and iCal feeds
 
-Next action: Begin Phase 04 (Calendar Management) planning
+Next action: Execute Phase 04 Plan 03 (iCal feed generation)
 
 ## Performance Metrics
 
@@ -57,6 +57,7 @@ Next action: Begin Phase 04 (Calendar Management) planning
 | Phase 03 P04 | 241 | 2 tasks | 5 files |
 | Phase 03 P05 | 196 | 2 tasks | 4 files |
 | Phase 04 P01 | 282 | 3 tasks | 8 files |
+| Phase 04 P02 | 219 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -100,6 +101,9 @@ Next action: Begin Phase 04 (Calendar Management) planning
 | Batch query pattern for calendar events | Phase 4 P01 | 2026-05-16 | O(n) instead of O(n²) queries; join assignments with jobs in single query |
 | Max 365-day date range validation | Phase 4 P01 | 2026-05-16 | Prevents unbounded queries that could impact database performance |
 | ICalToken non-expiring by default | Phase 4 P01 | 2026-05-16 | Simpler UX for crew calendar subscriptions; revocable via deletion if compromised |
+| Batch queries for bulk availability | Phase 4 P02 | 2026-05-16 | Single query per resource type prevents N+1 as crew count scales |
+| Only CONFIRMED assignments count as booked | Phase 4 P02 | 2026-05-16 | PENDING/DECLINED should not block availability; clearer availability picture |
+| Status priority: unavailable > booked > free | Phase 4 P02 | 2026-05-16 | Unavailable patterns override bookings (crew can't work those days anyway) |
 
 ### Open Questions
 
@@ -125,28 +129,28 @@ Next action: Begin Phase 04 (Calendar Management) planning
 
 ## Session Continuity
 
-**Last session:** 2026-05-16T01:34:47Z
-**Stopped at:** Completed Phase 04 Plan 01
+**Last session:** 2026-05-16T01:42:45Z
+**Stopped at:** Completed Phase 04 Plan 02
 
 **What changed this session:**
 
-- Executed Plan 04-01: Calendar events API with batch-optimized date range queries
-- Created 3 REST endpoints: /calendar/events, /calendar/crew/{id}, /calendar/equipment/{id}
-- Unified CalendarEvent schema with event_type ('job', 'crew_assignment', 'equipment_assignment')
-- JOB_STATE_COLORS mapping for visual consistency (intake=blue, simmer=yellow, active=green, complete=grey)
-- ICalToken model for iCal feed authentication (non-expiring by default)
-- Migration 005 creates ical_tokens table with RLS tenant isolation
-- Added icalendar==7.1.0 dependency for Plan 04-03
-- Created 10 integration tests in test_calendar_events.py
-- Made 3 atomic commits (Task 1: schemas/model/migration, Task 2: API endpoints, Task 3: tests)
-- Batch query optimization: O(n) instead of O(n²) for assignments
+- Executed Plan 04-02: Crew availability expansion endpoints
+- Created 2 REST endpoints: GET /calendar/crew/{id}/availability, GET /calendar/availability
+- Per-crew endpoint: day-by-day status expansion (free/booked/unavailable)
+- Bulk endpoint: admin-only summary for all active crew
+- Weekly patterns expanded server-side into concrete date lists
+- Batch query optimization: .in_() queries to avoid N+1 (O(n) performance)
+- Status priority logic: unavailable > booked > free
+- Only CONFIRMED assignments count as booked (PENDING/DECLINED excluded)
+- Archived crew filtered from bulk endpoint
+- Created 9 integration tests in test_calendar_availability.py
+- Made 2 atomic commits (Task 1: endpoints, Task 2: tests)
 
 **Context for next session:**
 
-- Phase 04 Plan 01 COMPLETE - calendar events API ready
-- Next: Plan 04-02 (crew availability expansion + bulk admin summary endpoints)
-- Then: Plan 04-03 (iCal feed generation + token management)
-- Tests ready to run once PostgreSQL available (81 test functions total: 71 from Phase 03 + 10 from Phase 04 P01)
+- Phase 04 Plan 02 COMPLETE - availability endpoints ready
+- Next: Plan 04-03 (iCal feed generation + token management)
+- Tests ready to run once PostgreSQL available (90 test functions total: 71 from Phase 03 + 10 from Phase 04 P01 + 9 from Phase 04 P02)
 
 ---
 
