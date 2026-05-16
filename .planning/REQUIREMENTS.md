@@ -43,7 +43,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **EQUP-01**: Admin can add equipment to inventory (name, category, quantity, condition)
 - [ ] **EQUP-02**: Admin can assign equipment to jobs
 - [ ] **EQUP-03**: Equipment conflict detection prevents double-booking gear
-- [ ] **EQUP-04**: Equipment status tracking (available, assigned, maintenance)
+- [x] **EQUP-04**: Equipment status tracking (available, assigned, maintenance)
 
 ### Calendar & Scheduling
 
@@ -176,7 +176,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | EQUP-01 | Phase 3 | Complete |
 | EQUP-02 | Phase 3 | Pending |
 | EQUP-03 | Phase 3 | Pending |
-| EQUP-04 | Phase 3 | Pending |
+| EQUP-04 | Phase 3 | Complete |
 | SCHED-01 | Phase 4 | Pending |
 | SCHED-02 | Phase 4 | Pending |
 | SCHED-03 | Phase 4 | Pending |
