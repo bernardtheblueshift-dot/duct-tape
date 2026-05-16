@@ -98,3 +98,26 @@ Plans:
 - [ ] 03-05-PLAN.md — Ratings, availability patterns, skills matrix (Wave 3)
 
 ---
+
+### Phase 4: Calendar & Scheduling
+**Goal**: Visual calendar showing jobs and resource bookings across month/week/day views, with crew availability overlaid and iCal export for crew to sync with personal calendars
+
+**Depends on**: Phase 1, Phase 2, Phase 3
+
+**Requirements**: SCHED-01, SCHED-02, SCHED-03, SCHED-04, SCHED-06
+
+**Success Criteria** (what must be TRUE):
+  1. Month view shows all jobs and resource bookings as colored blocks
+  2. Week view with daily breakdown of crew and equipment assignments
+  3. Day view showing detailed schedule per resource (crew member or equipment item)
+  4. Crew availability visible on calendar (free, booked, unavailable from patterns)
+  5. Calendar export via iCal feed URL for crew to sync with personal calendars
+
+**Plans**: 3 plans in 2 waves
+
+Plans:
+- [ ] 04-01-PLAN.md — Schemas, ICalToken model, migration, calendar events + per-resource endpoints (Wave 1)
+- [ ] 04-02-PLAN.md — Crew availability expansion + bulk admin summary endpoints (Wave 2)
+- [ ] 04-03-PLAN.md — iCal feed generation + token management endpoints (Wave 2)
+
+---
