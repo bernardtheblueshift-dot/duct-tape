@@ -2,19 +2,171 @@
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, or_
-from datetime import datetime
+from sqlalchemy import select, or_, func
+from datetime import datetime, timezone
 from typing import List
+from uuid import UUID
 
 from app.database import get_db
 from app.dependencies import get_current_tenant
 from app.core.permissions import require_admin
 from app.models.job import Job, JobState
-from app.schemas.job import JobCreate, JobUpdate, JobResponse, JobTransitionRequest
+from app.schemas.job import JobCreate, JobUpdate, JobResponse, JobTransitionRequest, CoordinationSummary, MessageSummary, FileSummary
 from app.models.user import User
 from app.core.state_machine import can_transition
+from app.models import Message, Task, TaskStatus, JobFile
 
 router = APIRouter(prefix="/api/v1/jobs", tags=["jobs"])
+
+
+async def build_coordination_summary(
+    job_id: UUID, db: AsyncSession
+) -> CoordinationSummary:
+    """Build full coordination summary for a single job (detail view)"""
+
+    # Message count
+    message_count_result = await db.execute(
+        select(func.count(Message.id)).where(Message.job_id == job_id)
+    )
+    message_count = message_count_result.scalar() or 0
+
+    # Recent 3 messages
+    recent_messages_result = await db.execute(
+        select(Message)
+        .where(Message.job_id == job_id)
+        .order_by(Message.created_at.desc())
+        .limit(3)
+    )
+    recent_messages = [
+        MessageSummary(
+            id=msg.id,
+            user_id=msg.user_id,
+            content=msg.content,
+            created_at=msg.created_at,
+        )
+        for msg in recent_messages_result.scalars().all()
+    ]
+
+    # Task counts by status
+    task_counts_result = await db.execute(
+        select(Task.status, func.count(Task.id))
+        .where(Task.job_id == job_id)
+        .group_by(Task.status)
+    )
+    task_counts = {status: count for status, count in task_counts_result.all()}
+
+    # Overdue count (deadline < now AND status != DONE)
+    overdue_count_result = await db.execute(
+        select(func.count(Task.id)).where(
+            Task.job_id == job_id,
+            Task.deadline < datetime.now(timezone.utc),
+            Task.status != TaskStatus.DONE,
+        )
+    )
+    overdue_count = overdue_count_result.scalar() or 0
+
+    # File count
+    file_count_result = await db.execute(
+        select(func.count(JobFile.id)).where(JobFile.job_id == job_id)
+    )
+    file_count = file_count_result.scalar() or 0
+
+    # Recent 3 files
+    recent_files_result = await db.execute(
+        select(JobFile)
+        .where(JobFile.job_id == job_id)
+        .order_by(JobFile.created_at.desc())
+        .limit(3)
+    )
+    recent_files = [
+        FileSummary(
+            id=file.id,
+            original_filename=file.original_filename,
+            mime_type=file.mime_type,
+            file_size=file.file_size,
+            created_at=file.created_at,
+        )
+        for file in recent_files_result.scalars().all()
+    ]
+
+    return CoordinationSummary(
+        message_count=message_count,
+        recent_messages=recent_messages,
+        task_total=sum(task_counts.values()),
+        task_todo=task_counts.get(TaskStatus.TODO, 0),
+        task_in_progress=task_counts.get(TaskStatus.IN_PROGRESS, 0),
+        task_done=task_counts.get(TaskStatus.DONE, 0),
+        task_overdue=overdue_count,
+        file_count=file_count,
+        recent_files=recent_files,
+    )
+
+
+async def batch_coordination_summaries(
+    job_ids: list[UUID], db: AsyncSession
+) -> dict[UUID, CoordinationSummary]:
+    """Batch query coordination summaries for list view (counts only, no recent items)"""
+
+    if not job_ids:
+        return {}
+
+    # Message counts per job
+    message_counts_result = await db.execute(
+        select(Message.job_id, func.count(Message.id))
+        .where(Message.job_id.in_(job_ids))
+        .group_by(Message.job_id)
+    )
+    message_counts = {job_id: count for job_id, count in message_counts_result.all()}
+
+    # Task counts per job per status
+    task_counts_result = await db.execute(
+        select(Task.job_id, Task.status, func.count(Task.id))
+        .where(Task.job_id.in_(job_ids))
+        .group_by(Task.job_id, Task.status)
+    )
+    task_counts_by_job = {}
+    for job_id, status, count in task_counts_result.all():
+        if job_id not in task_counts_by_job:
+            task_counts_by_job[job_id] = {}
+        task_counts_by_job[job_id][status] = count
+
+    # Overdue counts per job
+    overdue_counts_result = await db.execute(
+        select(Task.job_id, func.count(Task.id))
+        .where(
+            Task.job_id.in_(job_ids),
+            Task.deadline < datetime.now(timezone.utc),
+            Task.status != TaskStatus.DONE,
+        )
+        .group_by(Task.job_id)
+    )
+    overdue_counts = {job_id: count for job_id, count in overdue_counts_result.all()}
+
+    # File counts per job
+    file_counts_result = await db.execute(
+        select(JobFile.job_id, func.count(JobFile.id))
+        .where(JobFile.job_id.in_(job_ids))
+        .group_by(JobFile.job_id)
+    )
+    file_counts = {job_id: count for job_id, count in file_counts_result.all()}
+
+    # Build summaries for each job
+    summaries = {}
+    for job_id in job_ids:
+        task_counts = task_counts_by_job.get(job_id, {})
+        summaries[job_id] = CoordinationSummary(
+            message_count=message_counts.get(job_id, 0),
+            recent_messages=[],  # Skip recent items in list view for performance
+            task_total=sum(task_counts.values()),
+            task_todo=task_counts.get(TaskStatus.TODO, 0),
+            task_in_progress=task_counts.get(TaskStatus.IN_PROGRESS, 0),
+            task_done=task_counts.get(TaskStatus.DONE, 0),
+            task_overdue=overdue_counts.get(job_id, 0),
+            file_count=file_counts.get(job_id, 0),
+            recent_files=[],  # Skip recent items in list view for performance
+        )
+
+    return summaries
 
 
 @router.post("/", response_model=JobResponse, status_code=status.HTTP_201_CREATED)
@@ -143,6 +295,9 @@ async def list_jobs(
                 )
             )
 
+        # Batch query coordination summaries
+        summaries = await batch_coordination_summaries(job_ids, db)
+
         # Build response with assignment data
         return [
             {
@@ -157,9 +312,7 @@ async def list_jobs(
                 "updated_at": job.updated_at,
                 "assigned_crew": crew_by_job.get(job.id, []),
                 "assigned_gear": equipment_by_job.get(job.id, []),
-                "messages": [],
-                "tasks": [],
-                "files": [],
+                "coordination": summaries.get(job.id, CoordinationSummary()),
             }
             for job in jobs
         ]
@@ -224,6 +377,9 @@ async def get_job(
         for ea in equipment_result.scalars().all()
     ]
 
+    # Get coordination summary
+    coordination = await build_coordination_summary(job.id, db)
+
     # Build response manually with assignment data
     return {
         "id": job.id,
@@ -237,9 +393,7 @@ async def get_job(
         "updated_at": job.updated_at,
         "assigned_crew": crew_assignments,
         "assigned_gear": equipment_assignments,
-        "messages": [],
-        "tasks": [],
-        "files": [],
+        "coordination": coordination,
     }
 
 
@@ -258,6 +412,9 @@ async def update_job(
     Only updates fields provided in request (partial updates supported).
     RLS automatically filters by tenant.
     """
+    from app.models import CrewAssignment, EquipmentAssignment
+    from app.schemas.job import CrewAssignmentSummary, EquipmentAssignmentSummary
+
     result = await db.execute(select(Job).where(Job.id == job_id))
     job = result.scalar_one_or_none()
 
@@ -274,7 +431,52 @@ async def update_job(
 
     await db.commit()
     await db.refresh(job)
-    return job
+
+    # Query crew assignments
+    crew_result = await db.execute(
+        select(CrewAssignment).where(CrewAssignment.job_id == job_id)
+    )
+    crew_assignments = [
+        CrewAssignmentSummary(
+            id=ca.id,
+            crew_id=ca.crew_id,
+            role=ca.role,
+            status=ca.status.value,
+        )
+        for ca in crew_result.scalars().all()
+    ]
+
+    # Query equipment assignments
+    equipment_result = await db.execute(
+        select(EquipmentAssignment).where(EquipmentAssignment.job_id == job_id)
+    )
+    equipment_assignments = [
+        EquipmentAssignmentSummary(
+            id=ea.id,
+            equipment_id=ea.equipment_id,
+            quantity_assigned=ea.quantity_assigned,
+        )
+        for ea in equipment_result.scalars().all()
+    ]
+
+    # Get coordination summary
+    coordination = await build_coordination_summary(job.id, db)
+
+    # Build response with assignment and coordination data
+    return {
+        "id": job.id,
+        "title": job.title,
+        "description": job.description,
+        "venue": job.venue,
+        "scheduled_start": job.scheduled_start,
+        "scheduled_end": job.scheduled_end,
+        "state": job.state,
+        "created_at": job.created_at,
+        "updated_at": job.updated_at,
+        "assigned_crew": crew_assignments,
+        "assigned_gear": equipment_assignments,
+        "coordination": coordination,
+    }
 
 
 @router.delete("/{job_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -324,6 +526,9 @@ async def transition_job_state(
     Returns 400 if transition is invalid.
     RLS automatically filters by tenant.
     """
+    from app.models import CrewAssignment, EquipmentAssignment
+    from app.schemas.job import CrewAssignmentSummary, EquipmentAssignmentSummary
+
     # Get job
     result = await db.execute(select(Job).where(Job.id == job_id))
     job = result.scalar_one_or_none()
@@ -345,4 +550,49 @@ async def transition_job_state(
     job.state = transition.new_state
     await db.commit()
     await db.refresh(job)
-    return job
+
+    # Query crew assignments
+    crew_result = await db.execute(
+        select(CrewAssignment).where(CrewAssignment.job_id == job_id)
+    )
+    crew_assignments = [
+        CrewAssignmentSummary(
+            id=ca.id,
+            crew_id=ca.crew_id,
+            role=ca.role,
+            status=ca.status.value,
+        )
+        for ca in crew_result.scalars().all()
+    ]
+
+    # Query equipment assignments
+    equipment_result = await db.execute(
+        select(EquipmentAssignment).where(EquipmentAssignment.job_id == job_id)
+    )
+    equipment_assignments = [
+        EquipmentAssignmentSummary(
+            id=ea.id,
+            equipment_id=ea.equipment_id,
+            quantity_assigned=ea.quantity_assigned,
+        )
+        for ea in equipment_result.scalars().all()
+    ]
+
+    # Get coordination summary
+    coordination = await build_coordination_summary(job.id, db)
+
+    # Build response with assignment and coordination data
+    return {
+        "id": job.id,
+        "title": job.title,
+        "description": job.description,
+        "venue": job.venue,
+        "scheduled_start": job.scheduled_start,
+        "scheduled_end": job.scheduled_end,
+        "state": job.state,
+        "created_at": job.created_at,
+        "updated_at": job.updated_at,
+        "assigned_crew": crew_assignments,
+        "assigned_gear": equipment_assignments,
+        "coordination": coordination,
+    }
