@@ -13,6 +13,7 @@ from app.models.assignment import (
 )
 from app.models.availability import AvailabilityPattern
 from app.models.rating import CrewRating
+from app.models.ical_token import ICalToken
 
 __all__ = [
     "Base",
@@ -35,4 +36,5 @@ __all__ = [
     "ASSIGNMENT_TRANSITIONS",
     "AvailabilityPattern",
     "CrewRating",
+    "ICalToken",
 ]

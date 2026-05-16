@@ -18,6 +18,7 @@ dependencies = [
     "python-dotenv",
     "redis==7.4.0",
     "celery==5.6.3",
+    "icalendar==7.1.0",
 ]
 
 [project.optional-dependencies]
