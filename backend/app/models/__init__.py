@@ -14,6 +14,10 @@ from app.models.assignment import (
 from app.models.availability import AvailabilityPattern
 from app.models.rating import CrewRating
 from app.models.ical_token import ICalToken
+from app.models.message import Message
+from app.models.task import Task, TaskStatus, TaskPriority
+from app.models.file import JobFile
+from app.models.message_file import message_files
 
 __all__ = [
     "Base",
@@ -37,4 +41,10 @@ __all__ = [
     "AvailabilityPattern",
     "CrewRating",
     "ICalToken",
+    "Message",
+    "Task",
+    "TaskStatus",
+    "TaskPriority",
+    "JobFile",
+    "message_files",
 ]
