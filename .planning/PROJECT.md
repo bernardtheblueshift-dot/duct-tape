@@ -17,13 +17,14 @@ When a job ignites, a production manager can instantly see who's available, what
 - [x] Crew profiles (skills, rates, availability, past jobs, reliability rating, contact details) — Validated in Phase 3: Resource Management
 - [x] Equipment tracking (owned inventory) — Validated in Phase 3: Resource Management
 - [x] Resource allocation — assign crew and gear to jobs with conflict detection — Validated in Phase 3: Resource Management
+- [x] Availability calendar — API endpoints for month/week/day views showing crew/gear bookings — Validated in Phase 4: Calendar & Scheduling
+- [x] iCal export — crew can sync assignments to personal calendars via subscription URL — Validated in Phase 4: Calendar & Scheduling
 
 ### Active
 
 - [ ] Ad-hoc job intake from multiple sources (email, text, meetings)
 - [ ] Deep crew bench support (15-30+ freelancers per tenant)
 - [ ] Equipment tracking (hired/rented gear — rental management deferred to v2)
-- [ ] Availability calendar — day and month views showing crew/gear bookings
 - [ ] Threaded messaging tied to jobs (Slack-like secure messaging)
 - [ ] Task assignment with deadlines, priority levels, and expected delivery times
 - [ ] File sharing — briefs, runsheets, photos, videos, documents
@@ -67,4 +68,4 @@ When a job ignites, a production manager can instantly see who's available, what
 | Cloud-deployed | Multiple users need remote access | — Pending |
 
 ---
-*Last updated: 2026-05-16 after Phase 3 completion*
+*Last updated: 2026-05-16 after Phase 4 completion*
