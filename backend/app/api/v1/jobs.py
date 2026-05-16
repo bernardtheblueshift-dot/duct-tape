@@ -61,8 +61,12 @@ async def list_jobs(
     - end_date: Jobs scheduled on or before this date
 
     Results ordered by scheduled_start descending (most recent first).
+    Populates assigned_crew and assigned_gear for each job.
     RLS automatically filters by tenant.
     """
+    from app.models import CrewAssignment, EquipmentAssignment
+    from app.schemas.job import CrewAssignmentSummary, EquipmentAssignmentSummary
+
     query = select(Job)
 
     # Apply search filter across multiple fields
@@ -95,8 +99,72 @@ async def list_jobs(
     query = query.order_by(Job.scheduled_start.desc())
 
     result = await db.execute(query)
-    jobs = result.scalars().all()
-    return jobs
+    jobs = list(result.scalars().all())
+
+    # Batch query assignments for all jobs
+    if jobs:
+        job_ids = [job.id for job in jobs]
+
+        # Query all crew assignments
+        crew_result = await db.execute(
+            select(CrewAssignment).where(CrewAssignment.job_id.in_(job_ids))
+        )
+        all_crew_assignments = crew_result.scalars().all()
+
+        # Query all equipment assignments
+        equipment_result = await db.execute(
+            select(EquipmentAssignment).where(EquipmentAssignment.job_id.in_(job_ids))
+        )
+        all_equipment_assignments = equipment_result.scalars().all()
+
+        # Group assignments by job_id
+        crew_by_job = {}
+        for ca in all_crew_assignments:
+            if ca.job_id not in crew_by_job:
+                crew_by_job[ca.job_id] = []
+            crew_by_job[ca.job_id].append(
+                CrewAssignmentSummary(
+                    id=ca.id,
+                    crew_id=ca.crew_id,
+                    role=ca.role,
+                    status=ca.status.value,
+                )
+            )
+
+        equipment_by_job = {}
+        for ea in all_equipment_assignments:
+            if ea.job_id not in equipment_by_job:
+                equipment_by_job[ea.job_id] = []
+            equipment_by_job[ea.job_id].append(
+                EquipmentAssignmentSummary(
+                    id=ea.id,
+                    equipment_id=ea.equipment_id,
+                    quantity_assigned=ea.quantity_assigned,
+                )
+            )
+
+        # Build response with assignment data
+        return [
+            {
+                "id": job.id,
+                "title": job.title,
+                "description": job.description,
+                "venue": job.venue,
+                "scheduled_start": job.scheduled_start,
+                "scheduled_end": job.scheduled_end,
+                "state": job.state,
+                "created_at": job.created_at,
+                "updated_at": job.updated_at,
+                "assigned_crew": crew_by_job.get(job.id, []),
+                "assigned_gear": equipment_by_job.get(job.id, []),
+                "messages": [],
+                "tasks": [],
+                "files": [],
+            }
+            for job in jobs
+        ]
+
+    return []
 
 
 @router.get("/{job_id}", response_model=JobResponse)
@@ -106,17 +174,20 @@ async def get_job(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Get job by ID with placeholder sections for future features.
+    Get job by ID with populated assignments and placeholder sections.
 
-    Returns job with empty placeholder sections for:
-    - assigned_crew (Phase 3)
-    - assigned_gear (Phase 3)
-    - messages (Phase 5)
-    - tasks (Phase 5)
-    - files (Phase 5)
+    Returns job with:
+    - assigned_crew (Phase 3) - populated from CrewAssignment
+    - assigned_gear (Phase 3) - populated from EquipmentAssignment
+    - messages (Phase 5) - placeholder
+    - tasks (Phase 5) - placeholder
+    - files (Phase 5) - placeholder
 
     RLS automatically filters by tenant.
     """
+    from app.models import CrewAssignment, EquipmentAssignment
+    from app.schemas.job import CrewAssignmentSummary, EquipmentAssignmentSummary
+
     result = await db.execute(select(Job).where(Job.id == job_id))
     job = result.scalar_one_or_none()
 
@@ -126,7 +197,50 @@ async def get_job(
             detail="Job not found",
         )
 
-    return job
+    # Query crew assignments
+    crew_result = await db.execute(
+        select(CrewAssignment).where(CrewAssignment.job_id == job_id)
+    )
+    crew_assignments = [
+        CrewAssignmentSummary(
+            id=ca.id,
+            crew_id=ca.crew_id,
+            role=ca.role,
+            status=ca.status.value,
+        )
+        for ca in crew_result.scalars().all()
+    ]
+
+    # Query equipment assignments
+    equipment_result = await db.execute(
+        select(EquipmentAssignment).where(EquipmentAssignment.job_id == job_id)
+    )
+    equipment_assignments = [
+        EquipmentAssignmentSummary(
+            id=ea.id,
+            equipment_id=ea.equipment_id,
+            quantity_assigned=ea.quantity_assigned,
+        )
+        for ea in equipment_result.scalars().all()
+    ]
+
+    # Build response manually with assignment data
+    return {
+        "id": job.id,
+        "title": job.title,
+        "description": job.description,
+        "venue": job.venue,
+        "scheduled_start": job.scheduled_start,
+        "scheduled_end": job.scheduled_end,
+        "state": job.state,
+        "created_at": job.created_at,
+        "updated_at": job.updated_at,
+        "assigned_crew": crew_assignments,
+        "assigned_gear": equipment_assignments,
+        "messages": [],
+        "tasks": [],
+        "files": [],
+    }
 
 
 @router.patch("/{job_id}", response_model=JobResponse)

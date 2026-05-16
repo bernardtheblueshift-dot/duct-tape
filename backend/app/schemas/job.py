@@ -6,6 +6,27 @@ from uuid import UUID
 from app.models.job import JobState
 
 
+class CrewAssignmentSummary(BaseModel):
+    """Summary of crew assignment for embedding in JobResponse"""
+
+    id: UUID
+    crew_id: UUID
+    role: str | None
+    status: str  # Use str to avoid circular import with AssignmentState
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class EquipmentAssignmentSummary(BaseModel):
+    """Summary of equipment assignment for embedding in JobResponse"""
+
+    id: UUID
+    equipment_id: UUID
+    quantity_assigned: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class JobCreate(BaseModel):
     """Request schema for creating job"""
 
@@ -40,9 +61,10 @@ class JobResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
+    # Phase 3: Resource Management - populated with real data
+    assigned_crew: list[CrewAssignmentSummary] = []
+    assigned_gear: list[EquipmentAssignmentSummary] = []
     # Placeholder sections for future phases (JOBS-06)
-    assigned_crew: list = []  # Phase 3: Resource Management
-    assigned_gear: list = []  # Phase 3: Resource Management
     messages: list = []  # Phase 5: Coordination Layer
     tasks: list = []  # Phase 5: Coordination Layer
     files: list = []  # Phase 5: Coordination Layer
