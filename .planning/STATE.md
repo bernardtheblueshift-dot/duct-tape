@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 05-03-PLAN.md
-last_updated: "2026-05-16T07:55:00.114Z"
+stopped_at: Completed 05-04-PLAN.md
+last_updated: "2026-05-16T08:00:20.691Z"
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 19
-  completed_plans: 17
+  completed_plans: 18
 ---
 
 # Project State: Duct Tape
@@ -26,7 +26,7 @@ progress:
 ## Current Position
 
 Phase: 05 (coordination-layer) — EXECUTING
-Plan: 4 of 5
+Plan: 5 of 5
 
 ### Phase Context
 
@@ -63,6 +63,8 @@ Next action: Plan Phase 05 (Coordination Tools)
 | Phase 05 P02 | 147 | 2 tasks | 5 files |
 | Phase 05 P03 | 151 | 2 tasks | 4 files |
 | Phase 05 P03 | 151 | 2 tasks | 4 files |
+| Phase 05 P04 | 143 | 2 tasks | 3 files |
+| Phase 05 P04 | 143 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -121,6 +123,8 @@ Next action: Plan Phase 05 (Coordination Tools)
 | Fire-and-forget subscribe/unsubscribe | Phase 5 P02 | 2026-05-16 | Subscriptions are client state management, no server response needed; avoids unnecessary round-trips |
 | Admin-only task creation, crew can update status | Phase 5 P03 | 2026-05-16 | Tasks originate from admin planning; crew need autonomy to update progress on assigned tasks |
 | Priority ordering via case() expression | Phase 5 P03 | 2026-05-16 | TaskPriority enum has no inherent order; manual mapping needed for urgent > high > medium > low |
+| Dual router pattern for files | Phase 5 P04 | 2026-05-16 | Job-scoped for upload/list, file-scoped for serve/delete; prevents redundant job_id in download URLs |
+| Delete DB record first, then disk file | Phase 5 P04 | 2026-05-16 | Prevents orphaned DB records; if disk deletion fails, metadata already cleaned up |
 
 ### Open Questions
 
@@ -146,29 +150,30 @@ Next action: Plan Phase 05 (Coordination Tools)
 
 ## Session Continuity
 
-**Last session:** 2026-05-16T07:55:00.110Z
-**Stopped at:** Completed 05-03-PLAN.md
+**Last session:** 2026-05-16T08:00:20.687Z
+**Stopped at:** Completed 05-04-PLAN.md
 
 **What changed this session:**
 
-- Executed Plan 05-03: Task Management REST API
-- Created 6 task endpoints at /api/v1/jobs/{job_id}/tasks: POST create, GET list, GET single, PATCH update, POST status transition, DELETE
-- Admin-only creation and field updates; crew can update status on assigned tasks only
-- Permission check: admin OR task.assignee_id matches crew_profile.id (via user_id lookup)
-- GET list supports filtering by status and assignee_id
-- Priority ordering via SQLAlchemy case() expression: urgent > high > medium > low
-- Task can optionally link to message via message_id FK with validation
-- State transitions validated via can_transition() from task_state.py
-- Created 23 tests: 8 unit tests for state machine, 15 integration tests for API
+- Executed Plan 05-04: File Upload and Management API
+- Created dual router pattern: job-scoped (upload/list) and file-scoped (serve/delete)
+- POST /api/v1/jobs/{job_id}/files uploads with server-side MIME validation via python-magic
+- GET /api/v1/files/{file_id}/download serves files with correct Content-Type header
+- DELETE /api/v1/files/{file_id} removes both DB record and disk file (admin only)
+- 5 endpoints total: upload_file, list_files, get_file_metadata, serve_file, delete_file_endpoint
+- Storage: uploads/{tenant_id}/{job_id}/{file_id}.ext with UUID filenames
+- Security: RLS tenant isolation, 100MB size limit, MIME validation
+- Permissions: require_active for upload/view, require_admin for delete
+- Created 14 integration tests mocking save_upload to avoid filesystem dependencies
 - Made 2 atomic commits (Task 1: API, Task 2: tests)
 - No deviations: plan executed exactly as written
 
 **Context for next session:**
 
-- Phase 05 Plan 03 COMPLETE - task management API with state machine working
-- Plans 05-01 (task state, file upload), 05-02 (message API, WebSocket), 05-03 (task REST API) shipped
-- Next: Plan 05-04 or 05-05 (remaining coordination layer features)
-- Tests ready to run once PostgreSQL available (145 test functions total: 122 from previous + 23 from P05-03)
+- Phase 05 Plan 04 COMPLETE - file upload/serving API fully functional
+- Plans 05-01 through 05-04 shipped (task state, file models, messages, WebSocket, tasks, files)
+- Next: Plan 05-05 (final coordination layer plan) or Phase 06
+- Tests ready to run once PostgreSQL available (159 test functions total: 145 from previous + 14 from P05-04)
 
 ---
 

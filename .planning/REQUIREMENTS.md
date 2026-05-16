@@ -72,7 +72,7 @@ Requirements for initial release. Each maps to roadmap phases.
 ### File Sharing
 
 - [x] **FILE-01**: Users can upload files to a job (briefs, runsheets, photos, videos, docs)
-- [ ] **FILE-02**: File preview for images and PDFs
+- [x] **FILE-02**: File preview for images and PDFs
 - [x] **FILE-03**: Files are organized per job with upload metadata (who, when, size)
 - [x] **FILE-04**: Secure file storage with tenant isolation
 
@@ -193,7 +193,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TASK-04 | Phase 5 | Complete |
 | TASK-05 | Phase 5 | Complete |
 | FILE-01 | Phase 5 | Complete |
-| FILE-02 | Phase 5 | Pending |
+| FILE-02 | Phase 5 | Complete |
 | FILE-03 | Phase 5 | Complete |
 | FILE-04 | Phase 5 | Complete |
 | NOTF-01 | Phase 6 | Pending |
