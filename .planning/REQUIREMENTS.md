@@ -28,7 +28,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Crew Management
 
-- [ ] **CREW-01**: Admin can create crew profiles (name, role, skills, rate, contact details)
+- [x] **CREW-01**: Admin can create crew profiles (name, role, skills, rate, contact details)
 - [ ] **CREW-02**: Admin can edit and archive crew profiles
 - [ ] **CREW-03**: Searchable crew directory filterable by role, skill, availability
 - [ ] **CREW-04**: Crew can accept or decline job assignments (confirmation workflow)
@@ -40,7 +40,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Equipment
 
-- [ ] **EQUP-01**: Admin can add equipment to inventory (name, category, quantity, condition)
+- [x] **EQUP-01**: Admin can add equipment to inventory (name, category, quantity, condition)
 - [ ] **EQUP-02**: Admin can assign equipment to jobs
 - [ ] **EQUP-03**: Equipment conflict detection prevents double-booking gear
 - [ ] **EQUP-04**: Equipment status tracking (available, assigned, maintenance)
@@ -164,7 +164,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | JOBS-04 | Phase 2 | Complete |
 | JOBS-05 | Phase 2 | Complete |
 | JOBS-06 | Phase 2 | Complete |
-| CREW-01 | Phase 3 | Pending |
+| CREW-01 | Phase 3 | Complete |
 | CREW-02 | Phase 3 | Pending |
 | CREW-03 | Phase 3 | Pending |
 | CREW-04 | Phase 3 | Pending |
@@ -173,7 +173,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CREW-07 | Phase 3 | Pending |
 | CREW-08 | Phase 3 | Pending |
 | CREW-09 | Phase 3 | Pending |
-| EQUP-01 | Phase 3 | Pending |
+| EQUP-01 | Phase 3 | Complete |
 | EQUP-02 | Phase 3 | Pending |
 | EQUP-03 | Phase 3 | Pending |
 | EQUP-04 | Phase 3 | Pending |
