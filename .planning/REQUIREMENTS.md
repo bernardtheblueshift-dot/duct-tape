@@ -56,25 +56,25 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Messaging
 
-- [ ] **MSG-01**: Threaded messaging per job (Slack-like channels scoped to each job)
-- [ ] **MSG-02**: Messages support text with basic formatting
+- [x] **MSG-01**: Threaded messaging per job (Slack-like channels scoped to each job)
+- [x] **MSG-02**: Messages support text with basic formatting
 - [ ] **MSG-03**: Message history is searchable within a job
 - [ ] **MSG-04**: Real-time message delivery via WebSockets
 
 ### Task Management
 
-- [ ] **TASK-01**: Admin can create tasks linked to a job
-- [ ] **TASK-02**: Tasks have assignee, deadline, priority (low/medium/high/urgent), and status
-- [ ] **TASK-03**: Task status workflow: todo → in progress → done
+- [x] **TASK-01**: Admin can create tasks linked to a job
+- [x] **TASK-02**: Tasks have assignee, deadline, priority (low/medium/high/urgent), and status
+- [x] **TASK-03**: Task status workflow: todo → in progress → done
 - [ ] **TASK-04**: Crew can view and update tasks assigned to them
-- [ ] **TASK-05**: Tasks can reference messages for context
+- [x] **TASK-05**: Tasks can reference messages for context
 
 ### File Sharing
 
-- [ ] **FILE-01**: Users can upload files to a job (briefs, runsheets, photos, videos, docs)
+- [x] **FILE-01**: Users can upload files to a job (briefs, runsheets, photos, videos, docs)
 - [ ] **FILE-02**: File preview for images and PDFs
-- [ ] **FILE-03**: Files are organized per job with upload metadata (who, when, size)
-- [ ] **FILE-04**: Secure file storage with tenant isolation
+- [x] **FILE-03**: Files are organized per job with upload metadata (who, when, size)
+- [x] **FILE-04**: Secure file storage with tenant isolation
 
 ### Notifications
 
@@ -183,19 +183,19 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SCHED-04 | Phase 4 | Complete |
 | SCHED-05 | Phase 3 | Complete |
 | SCHED-06 | Phase 4 | Complete |
-| MSG-01 | Phase 5 | Pending |
-| MSG-02 | Phase 5 | Pending |
+| MSG-01 | Phase 5 | Complete |
+| MSG-02 | Phase 5 | Complete |
 | MSG-03 | Phase 5 | Pending |
 | MSG-04 | Phase 5 | Pending |
-| TASK-01 | Phase 5 | Pending |
-| TASK-02 | Phase 5 | Pending |
-| TASK-03 | Phase 5 | Pending |
+| TASK-01 | Phase 5 | Complete |
+| TASK-02 | Phase 5 | Complete |
+| TASK-03 | Phase 5 | Complete |
 | TASK-04 | Phase 5 | Pending |
-| TASK-05 | Phase 5 | Pending |
-| FILE-01 | Phase 5 | Pending |
+| TASK-05 | Phase 5 | Complete |
+| FILE-01 | Phase 5 | Complete |
 | FILE-02 | Phase 5 | Pending |
-| FILE-03 | Phase 5 | Pending |
-| FILE-04 | Phase 5 | Pending |
+| FILE-03 | Phase 5 | Complete |
+| FILE-04 | Phase 5 | Complete |
 | NOTF-01 | Phase 6 | Pending |
 | NOTF-02 | Phase 6 | Pending |
 | NOTF-03 | Phase 6 | Pending |

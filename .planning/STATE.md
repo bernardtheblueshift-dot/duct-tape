@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Phase 5 context gathered
-last_updated: "2026-05-16T06:55:24.035Z"
+stopped_at: Completed 05-01-PLAN.md
+last_updated: "2026-05-16T07:44:01.506Z"
 progress:
   total_phases: 5
   completed_phases: 4
-  total_plans: 14
-  completed_plans: 14
+  total_plans: 19
+  completed_plans: 15
 ---
 
 # Project State: Duct Tape
@@ -25,8 +25,8 @@ progress:
 
 ## Current Position
 
-Phase: 04 (calendar-scheduling) — COMPLETE
-Plan: 3 of 3 (all plans complete)
+Phase: 05 (coordination-layer) — EXECUTING
+Plan: 2 of 5
 
 ### Phase Context
 
@@ -59,6 +59,7 @@ Next action: Plan Phase 05 (Coordination Tools)
 | Phase 04 P01 | 282 | 3 tasks | 8 files |
 | Phase 04 P02 | 219 | 2 tasks | 2 files |
 | Phase 04 P03 | 176 | 2 tasks | 4 files |
+| Phase 05 P01 | 194 | 3 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -109,6 +110,9 @@ Next action: Plan Phase 05 (Coordination Tools)
 | Dual router pattern for public + admin endpoints | Phase 4 P03 | 2026-05-16 | Separate /ical/ (public feed) from /api/v1/ical/ (admin token management) for clear prefix distinction |
 | Status 410 for expired tokens | Phase 4 P03 | 2026-05-16 | Distinct from 404 (invalid); signals to calendar apps that subscription was valid but no longer accessible |
 | Cache-Control: no-cache on feed | Phase 4 P03 | 2026-05-16 | Prevents calendar apps from serving stale data; ensures crew see updated assignments |
+| Bidirectional task state transitions | Phase 5 P01 | 2026-05-16 | TODO <-> IN_PROGRESS <-> DONE for workflow flexibility; tasks can be paused and reopened |
+| Tenant-isolated file storage with MIME validation | Phase 5 P01 | 2026-05-16 | uploads/tenant_id/job_id/file_id.ext prevents cross-tenant access; python-magic validates file content not client headers |
+| WebSocket manager singleton | Phase 5 P01 | 2026-05-16 | Global ConnectionManager for real-time job updates with user subscriptions; single source of truth for connections |
 
 ### Open Questions
 
@@ -134,8 +138,8 @@ Next action: Plan Phase 05 (Coordination Tools)
 
 ## Session Continuity
 
-**Last session:** 2026-05-16T06:55:24.016Z
-**Stopped at:** Phase 5 context gathered
+**Last session:** 2026-05-16T07:44:01.502Z
+**Stopped at:** Completed 05-01-PLAN.md
 
 **What changed this session:**
 
