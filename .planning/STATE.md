@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 05-02-PLAN.md
-last_updated: "2026-05-16T07:52:00.000Z"
+stopped_at: Completed 05-03-PLAN.md
+last_updated: "2026-05-16T07:55:00.114Z"
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 19
-  completed_plans: 16
+  completed_plans: 17
 ---
 
 # Project State: Duct Tape
@@ -26,7 +26,7 @@ progress:
 ## Current Position
 
 Phase: 05 (coordination-layer) — EXECUTING
-Plan: 3 of 5
+Plan: 4 of 5
 
 ### Phase Context
 
@@ -61,6 +61,8 @@ Next action: Plan Phase 05 (Coordination Tools)
 | Phase 04 P03 | 176 | 2 tasks | 4 files |
 | Phase 05 P01 | 194 | 3 tasks | 13 files |
 | Phase 05 P02 | 147 | 2 tasks | 5 files |
+| Phase 05 P03 | 151 | 2 tasks | 4 files |
+| Phase 05 P03 | 151 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -117,6 +119,8 @@ Next action: Plan Phase 05 (Coordination Tools)
 | Crew can post and read messages | Phase 5 P02 | 2026-05-16 | Crew need full participation in job discussions, not just read-only; enables collaboration |
 | JWT token in WebSocket query param | Phase 5 P02 | 2026-05-16 | WebSocket cannot send Authorization headers; query param is standard pattern for WebSocket auth |
 | Fire-and-forget subscribe/unsubscribe | Phase 5 P02 | 2026-05-16 | Subscriptions are client state management, no server response needed; avoids unnecessary round-trips |
+| Admin-only task creation, crew can update status | Phase 5 P03 | 2026-05-16 | Tasks originate from admin planning; crew need autonomy to update progress on assigned tasks |
+| Priority ordering via case() expression | Phase 5 P03 | 2026-05-16 | TaskPriority enum has no inherent order; manual mapping needed for urgent > high > medium > low |
 
 ### Open Questions
 
@@ -142,29 +146,29 @@ Next action: Plan Phase 05 (Coordination Tools)
 
 ## Session Continuity
 
-**Last session:** 2026-05-16T07:52:00.000Z
-**Stopped at:** Completed 05-02-PLAN.md
+**Last session:** 2026-05-16T07:55:00.110Z
+**Stopped at:** Completed 05-03-PLAN.md
 
 **What changed this session:**
 
-- Executed Plan 05-02: Message API and WebSocket broadcast
-- Created REST API for job-scoped threaded messaging: POST/GET list/GET single at /api/v1/jobs/{job_id}/messages
-- GET supports ILIKE search with case-insensitive substring matching
-- Messages ordered oldest-first (chat-style chronological flow)
-- WebSocket endpoint /ws with JWT auth via query param (WebSocket cannot send headers)
-- Subscribe/unsubscribe/ping actions for WebSocket protocol
-- ConnectionManager broadcasts new messages to all subscribed WebSocket clients
-- Both admin and crew can post and read messages (require_active)
-- Created 18 integration tests (11 message tests, 7 WebSocket tests) in test_messages.py and test_websocket.py
-- Made 2 atomic commits (Task 1: API + WebSocket, Task 2: tests)
+- Executed Plan 05-03: Task Management REST API
+- Created 6 task endpoints at /api/v1/jobs/{job_id}/tasks: POST create, GET list, GET single, PATCH update, POST status transition, DELETE
+- Admin-only creation and field updates; crew can update status on assigned tasks only
+- Permission check: admin OR task.assignee_id matches crew_profile.id (via user_id lookup)
+- GET list supports filtering by status and assignee_id
+- Priority ordering via SQLAlchemy case() expression: urgent > high > medium > low
+- Task can optionally link to message via message_id FK with validation
+- State transitions validated via can_transition() from task_state.py
+- Created 23 tests: 8 unit tests for state machine, 15 integration tests for API
+- Made 2 atomic commits (Task 1: API, Task 2: tests)
 - No deviations: plan executed exactly as written
 
 **Context for next session:**
 
-- Phase 05 Plan 02 COMPLETE - messaging and real-time broadcast working
-- Plan 05-01 (task state, file upload) and 05-02 (message API, WebSocket) shipped
-- Next: Plan 05-03 (task assignments and integration)
-- Tests ready to run once PostgreSQL available (122 test functions total: 104 from previous + 18 from P05-02)
+- Phase 05 Plan 03 COMPLETE - task management API with state machine working
+- Plans 05-01 (task state, file upload), 05-02 (message API, WebSocket), 05-03 (task REST API) shipped
+- Next: Plan 05-04 or 05-05 (remaining coordination layer features)
+- Tests ready to run once PostgreSQL available (145 test functions total: 122 from previous + 23 from P05-03)
 
 ---
 

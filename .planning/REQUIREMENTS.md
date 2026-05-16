@@ -66,7 +66,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **TASK-01**: Admin can create tasks linked to a job
 - [x] **TASK-02**: Tasks have assignee, deadline, priority (low/medium/high/urgent), and status
 - [x] **TASK-03**: Task status workflow: todo → in progress → done
-- [ ] **TASK-04**: Crew can view and update tasks assigned to them
+- [x] **TASK-04**: Crew can view and update tasks assigned to them
 - [x] **TASK-05**: Tasks can reference messages for context
 
 ### File Sharing
@@ -190,7 +190,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TASK-01 | Phase 5 | Complete |
 | TASK-02 | Phase 5 | Complete |
 | TASK-03 | Phase 5 | Complete |
-| TASK-04 | Phase 5 | Pending |
+| TASK-04 | Phase 5 | Complete |
 | TASK-05 | Phase 5 | Complete |
 | FILE-01 | Phase 5 | Complete |
 | FILE-02 | Phase 5 | Pending |
