@@ -12,17 +12,17 @@ When a job ignites, a production manager can instantly see who's available, what
 
 ### Validated
 
-(None yet — ship to validate)
+- [x] Multi-tenant SaaS with proper auth (admin + crew roles) — Validated in Phase 1: Foundation & Multi-Tenancy
+- [x] Job management with full lifecycle (intake → simmer → active → complete) — Validated in Phase 2: Job Management
+- [x] Crew profiles (skills, rates, availability, past jobs, reliability rating, contact details) — Validated in Phase 3: Resource Management
+- [x] Equipment tracking (owned inventory) — Validated in Phase 3: Resource Management
+- [x] Resource allocation — assign crew and gear to jobs with conflict detection — Validated in Phase 3: Resource Management
 
 ### Active
 
-- [ ] Multi-tenant SaaS with proper auth (admin + crew roles)
-- [ ] Job management with full lifecycle (intake → simmer → active → complete)
 - [ ] Ad-hoc job intake from multiple sources (email, text, meetings)
-- [ ] Crew profiles (skills, rates, availability, past jobs, reliability rating, contact details)
 - [ ] Deep crew bench support (15-30+ freelancers per tenant)
-- [ ] Equipment tracking (owned inventory + hired/rented gear)
-- [ ] Resource allocation — assign crew and gear to jobs with conflict detection
+- [ ] Equipment tracking (hired/rented gear — rental management deferred to v2)
 - [ ] Availability calendar — day and month views showing crew/gear bookings
 - [ ] Threaded messaging tied to jobs (Slack-like secure messaging)
 - [ ] Task assignment with deadlines, priority levels, and expected delivery times
@@ -67,4 +67,4 @@ When a job ignites, a production manager can instantly see who's available, what
 | Cloud-deployed | Multiple users need remote access | — Pending |
 
 ---
-*Last updated: 2026-05-15 after initialization*
+*Last updated: 2026-05-16 after Phase 3 completion*
