@@ -3,12 +3,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta, date as date_type
 from uuid import UUID
+from collections import defaultdict
 
 from app.database import get_db
 from app.dependencies import get_current_tenant
-from app.core.permissions import require_active
+from app.core.permissions import require_active, require_admin
 from app.models import (
     Job,
     JobState,
@@ -17,11 +18,15 @@ from app.models import (
     CrewProfile,
     Equipment,
     User,
+    AvailabilityPattern,
+    AssignmentState,
 )
 from app.schemas.calendar import (
     CalendarEvent,
     CalendarEventsResponse,
     JOB_STATE_COLORS,
+    AvailabilityDay,
+    CrewAvailabilitySummary,
 )
 
 router = APIRouter(prefix="/api/v1/calendar", tags=["calendar"])
@@ -331,3 +336,196 @@ async def get_equipment_calendar(
             )
 
     return CalendarEventsResponse(events=events, count=len(events))
+
+
+@router.get("/crew/{crew_id}/availability", response_model=list[AvailabilityDay])
+async def get_crew_availability(
+    crew_id: UUID,
+    start: datetime,
+    end: datetime,
+    current_user: User = Depends(require_active),
+    tenant_id: str = Depends(get_current_tenant),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Get crew member availability across date range.
+
+    Path parameters:
+    - crew_id: UUID of crew member
+
+    Query parameters:
+    - start: Start of date range (required)
+    - end: End of date range (required)
+
+    Returns per-day status list:
+    - status='free': Available and not assigned
+    - status='booked': Has CONFIRMED assignment on this day
+    - status='unavailable': Recurring pattern has is_available=False
+
+    Weekly patterns are expanded into concrete date list.
+    Date ranges exceeding 365 days return 400 error.
+    RLS automatically filters by tenant.
+    """
+    # Ensure timezone-aware datetimes
+    if start.tzinfo is None:
+        start = start.replace(tzinfo=timezone.utc)
+    if end.tzinfo is None:
+        end = end.replace(tzinfo=timezone.utc)
+
+    # Validate max date range
+    if (end - start).days > 365:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Date range too large (max 365 days)",
+        )
+
+    # Fetch unavailable weekdays for this crew
+    patterns_result = await db.execute(
+        select(AvailabilityPattern).where(
+            AvailabilityPattern.crew_id == crew_id,
+            AvailabilityPattern.is_available == False,
+        )
+    )
+    unavailable_weekdays = {p.day_of_week for p in patterns_result.scalars().all()}
+
+    # Fetch CONFIRMED crew assignments in range (batch with Job join)
+    assignments_result = await db.execute(
+        select(Job.scheduled_start, Job.scheduled_end)
+        .select_from(CrewAssignment)
+        .join(Job, CrewAssignment.job_id == Job.id)
+        .where(
+            CrewAssignment.crew_id == crew_id,
+            CrewAssignment.status == AssignmentState.CONFIRMED,
+            Job.scheduled_start.is_not(None),
+            Job.scheduled_end.is_not(None),
+            Job.scheduled_start < end,
+            Job.scheduled_end > start,
+        )
+    )
+    booked_ranges = [(row.scheduled_start, row.scheduled_end) for row in assignments_result.all()]
+
+    # Build per-day status list
+    days: list[AvailabilityDay] = []
+    current = start.date() if isinstance(start, datetime) else start
+    end_date = end.date() if isinstance(end, datetime) else end
+
+    while current <= end_date:
+        if current.weekday() in unavailable_weekdays:
+            status = "unavailable"
+        elif any(
+            job_start.date() <= current <= job_end.date()
+            for job_start, job_end in booked_ranges
+        ):
+            status = "booked"
+        else:
+            status = "free"
+        days.append(AvailabilityDay(date=current, status=status))
+        current += timedelta(days=1)
+
+    return days
+
+
+@router.get("/availability", response_model=list[CrewAvailabilitySummary])
+async def get_bulk_availability(
+    start: datetime,
+    end: datetime,
+    current_user: User = Depends(require_admin),
+    tenant_id: str = Depends(get_current_tenant),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Get all crew availability summary (admin-only).
+
+    Query parameters:
+    - start: Start of date range (required)
+    - end: End of date range (required)
+
+    Returns list of crew members with per-day availability status.
+    Only active (non-archived) crew included.
+    Uses batch queries to avoid N+1 performance issues.
+
+    Date ranges exceeding 365 days return 400 error.
+    RLS automatically filters by tenant.
+    """
+    # Ensure timezone-aware datetimes
+    if start.tzinfo is None:
+        start = start.replace(tzinfo=timezone.utc)
+    if end.tzinfo is None:
+        end = end.replace(tzinfo=timezone.utc)
+
+    # Validate max date range
+    if (end - start).days > 365:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Date range too large (max 365 days)",
+        )
+
+    # Get all active crew (not archived)
+    crew_result = await db.execute(
+        select(CrewProfile, User.email)
+        .join(User, CrewProfile.user_id == User.id)
+        .where(CrewProfile.archived_at.is_(None))
+    )
+    all_crew = crew_result.all()  # list of (CrewProfile, email) tuples
+    crew_ids = [c.id for c, _ in all_crew]
+
+    if not crew_ids:
+        return []
+
+    # Batch fetch ALL unavailable patterns for all crew
+    patterns_result = await db.execute(
+        select(AvailabilityPattern).where(
+            AvailabilityPattern.crew_id.in_(crew_ids),
+            AvailabilityPattern.is_available == False,
+        )
+    )
+    # Build map: crew_id -> set of unavailable weekdays
+    unavailable_map: dict[UUID, set[int]] = defaultdict(set)
+    for pattern in patterns_result.scalars().all():
+        unavailable_map[pattern.crew_id].add(pattern.day_of_week)
+
+    # Batch fetch ALL confirmed assignments in range
+    assignments_result = await db.execute(
+        select(CrewAssignment.crew_id, Job.scheduled_start, Job.scheduled_end)
+        .select_from(CrewAssignment)
+        .join(Job, CrewAssignment.job_id == Job.id)
+        .where(
+            CrewAssignment.crew_id.in_(crew_ids),
+            CrewAssignment.status == AssignmentState.CONFIRMED,
+            Job.scheduled_start.is_not(None),
+            Job.scheduled_end.is_not(None),
+            Job.scheduled_start < end,
+            Job.scheduled_end > start,
+        )
+    )
+    # Build map: crew_id -> list of (start, end) tuples
+    bookings_map: dict[UUID, list[tuple]] = defaultdict(list)
+    for row in assignments_result.all():
+        bookings_map[row.crew_id].append((row.scheduled_start, row.scheduled_end))
+
+    # Build summary for each crew member
+    summaries: list[CrewAvailabilitySummary] = []
+    for crew_profile, email in all_crew:
+        days = []
+        current = start.date() if isinstance(start, datetime) else start
+        end_date = end.date() if isinstance(end, datetime) else end
+
+        while current <= end_date:
+            if current.weekday() in unavailable_map[crew_profile.id]:
+                status = "unavailable"
+            elif any(s.date() <= current <= e.date() for s, e in bookings_map[crew_profile.id]):
+                status = "booked"
+            else:
+                status = "free"
+            days.append(AvailabilityDay(date=current, status=status))
+            current += timedelta(days=1)
+
+        summaries.append(
+            CrewAvailabilitySummary(
+                crew_id=crew_profile.id,
+                crew_name=email,
+                days=days,
+            )
+        )
+
+    return summaries
