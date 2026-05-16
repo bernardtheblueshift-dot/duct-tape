@@ -4,12 +4,12 @@ milestone: v1.0
 milestone_name: milestone
 status: unknown
 stopped_at: Phase 4 context gathered
-last_updated: "2026-05-16T01:07:05.249Z"
+last_updated: "2026-05-16T01:36:06.994Z"
 progress:
   total_phases: 4
   completed_phases: 3
-  total_plans: 11
-  completed_plans: 11
+  total_plans: 14
+  completed_plans: 12
 ---
 
 # Project State: Duct Tape
@@ -25,8 +25,8 @@ progress:
 
 ## Current Position
 
-Phase: 03 (resource-management) — COMPLETE
-Plan: 5 of 5 (all plans executed)
+Phase: 04 (calendar-scheduling) — EXECUTING
+Plan: 2 of 3
 
 ### Phase Context
 
@@ -56,6 +56,7 @@ Next action: Begin Phase 04 (Calendar Management) planning
 | Phase 03 P03 | 159 | 2 tasks | 3 files |
 | Phase 03 P04 | 241 | 2 tasks | 5 files |
 | Phase 03 P05 | 196 | 2 tasks | 4 files |
+| Phase 04 P01 | 282 | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -94,6 +95,11 @@ Next action: Begin Phase 04 (Calendar Management) planning
 | Cached rating aggregates on CrewProfile | Phase 3 P05 | 2026-05-16 | Avoids expensive AVG() query on every profile fetch; O(1) read vs O(n) aggregation |
 | DELETE all + INSERT for availability upsert | Phase 3 P05 | 2026-05-16 | Simpler than selective upsert, weekly patterns are small dataset (max 7 rows) |
 | Crew can set own availability, admin can set any | Phase 3 P05 | 2026-05-16 | Crew autonomy for personal scheduling, admin override for emergencies |
+| CalendarEvent unified format with event_type field | Phase 4 P01 | 2026-05-16 | Single schema for jobs, crew assignments, equipment assignments simplifies frontend consumption |
+| JOB_STATE_COLORS mapping | Phase 4 P01 | 2026-05-16 | Consistent visual coding: intake=blue, simmer=yellow, active=green, complete=grey |
+| Batch query pattern for calendar events | Phase 4 P01 | 2026-05-16 | O(n) instead of O(n²) queries; join assignments with jobs in single query |
+| Max 365-day date range validation | Phase 4 P01 | 2026-05-16 | Prevents unbounded queries that could impact database performance |
+| ICalToken non-expiring by default | Phase 4 P01 | 2026-05-16 | Simpler UX for crew calendar subscriptions; revocable via deletion if compromised |
 
 ### Open Questions
 
@@ -119,29 +125,28 @@ Next action: Begin Phase 04 (Calendar Management) planning
 
 ## Session Continuity
 
-**Last session:** 2026-05-16T01:07:05.242Z
-**Stopped at:** Phase 4 context gathered
+**Last session:** 2026-05-16T01:34:47Z
+**Stopped at:** Completed Phase 04 Plan 01
 
 **What changed this session:**
 
-- Executed Plan 03-05: Crew ratings, availability patterns, and skills matrix
-- Added 6 new endpoints to crew router: rate_crew, list_ratings, get_crew_history, set_availability, get_availability, get_skills_matrix
-- Rating system: 1-5 stars with cached average update (rating_average/rating_count on CrewProfile)
-- Availability patterns: upsert-based weekly patterns (DELETE all + INSERT), crew can set own, admin can set any
-- Skills matrix: PostgreSQL unnest() for unique skill extraction, boolean mapping per crew member
-- Crew job history: joins CrewAssignment with Job table for role/status/dates
-- Created 17 integration tests across 3 files (test_ratings.py, test_availability.py, test_crew_matrix.py)
-- Made 2 atomic commits (Task 1: 6 endpoints, Task 2: 17 tests)
-- PostgreSQL unavailable: 71 tests written total (54 from previous plans + 17 new) but not executed
+- Executed Plan 04-01: Calendar events API with batch-optimized date range queries
+- Created 3 REST endpoints: /calendar/events, /calendar/crew/{id}, /calendar/equipment/{id}
+- Unified CalendarEvent schema with event_type ('job', 'crew_assignment', 'equipment_assignment')
+- JOB_STATE_COLORS mapping for visual consistency (intake=blue, simmer=yellow, active=green, complete=grey)
+- ICalToken model for iCal feed authentication (non-expiring by default)
+- Migration 005 creates ical_tokens table with RLS tenant isolation
+- Added icalendar==7.1.0 dependency for Plan 04-03
+- Created 10 integration tests in test_calendar_events.py
+- Made 3 atomic commits (Task 1: schemas/model/migration, Task 2: API endpoints, Task 3: tests)
+- Batch query optimization: O(n) instead of O(n²) for assignments
 
 **Context for next session:**
 
-- Phase 03 (Resource Management) COMPLETE - all 5 plans executed
-- Crew management: profiles, search/filter, ratings, availability, skills matrix
-- Equipment management: inventory, condition tracking, delete protection
-- Assignment workflows: crew/equipment assignment, conflict detection, state transitions
-- Next: Phase 04 (Calendar Management) - visual availability calendar, conflict highlighting, drag-drop scheduling
-- Tests ready to run once PostgreSQL available (71 test functions total across Phase 03)
+- Phase 04 Plan 01 COMPLETE - calendar events API ready
+- Next: Plan 04-02 (crew availability expansion + bulk admin summary endpoints)
+- Then: Plan 04-03 (iCal feed generation + token management)
+- Tests ready to run once PostgreSQL available (81 test functions total: 71 from Phase 03 + 10 from Phase 04 P01)
 
 ---
 

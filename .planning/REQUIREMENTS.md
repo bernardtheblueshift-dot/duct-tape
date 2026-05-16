@@ -47,9 +47,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Calendar & Scheduling
 
-- [ ] **SCHED-01**: Month view showing all jobs and resource bookings
-- [ ] **SCHED-02**: Week view with daily breakdown of assignments
-- [ ] **SCHED-03**: Day view showing detailed schedule per resource
+- [x] **SCHED-01**: Month view showing all jobs and resource bookings
+- [x] **SCHED-02**: Week view with daily breakdown of assignments
+- [x] **SCHED-03**: Day view showing detailed schedule per resource
 - [ ] **SCHED-04**: Crew availability visible on calendar (free, booked, unavailable)
 - [x] **SCHED-05**: Conflict detection prevents double-booking crew across overlapping jobs
 - [ ] **SCHED-06**: Calendar export via iCal for crew to sync with personal calendars
@@ -177,9 +177,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | EQUP-02 | Phase 3 | Complete |
 | EQUP-03 | Phase 3 | Complete |
 | EQUP-04 | Phase 3 | Complete |
-| SCHED-01 | Phase 4 | Pending |
-| SCHED-02 | Phase 4 | Pending |
-| SCHED-03 | Phase 4 | Pending |
+| SCHED-01 | Phase 4 | Complete |
+| SCHED-02 | Phase 4 | Complete |
+| SCHED-03 | Phase 4 | Complete |
 | SCHED-04 | Phase 4 | Pending |
 | SCHED-05 | Phase 3 | Complete |
 | SCHED-06 | Phase 4 | Pending |

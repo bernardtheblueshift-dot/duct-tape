@@ -116,7 +116,7 @@ Plans:
 **Plans**: 3 plans in 2 waves
 
 Plans:
-- [ ] 04-01-PLAN.md — Schemas, ICalToken model, migration, calendar events + per-resource endpoints (Wave 1)
+- [x] 04-01-PLAN.md — Schemas, ICalToken model, migration, calendar events + per-resource endpoints (Wave 1) ✓
 - [ ] 04-02-PLAN.md — Crew availability expansion + bulk admin summary endpoints (Wave 2)
 - [ ] 04-03-PLAN.md — iCal feed generation + token management endpoints (Wave 2)
 
