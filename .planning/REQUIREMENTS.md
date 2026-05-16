@@ -29,8 +29,8 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Crew Management
 
 - [x] **CREW-01**: Admin can create crew profiles (name, role, skills, rate, contact details)
-- [ ] **CREW-02**: Admin can edit and archive crew profiles
-- [ ] **CREW-03**: Searchable crew directory filterable by role, skill, availability
+- [x] **CREW-02**: Admin can edit and archive crew profiles
+- [x] **CREW-03**: Searchable crew directory filterable by role, skill, availability
 - [ ] **CREW-04**: Crew can accept or decline job assignments (confirmation workflow)
 - [ ] **CREW-05**: Admin can rate crew reliability after each job
 - [ ] **CREW-06**: Crew profile shows reliability history and past jobs
@@ -51,7 +51,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **SCHED-02**: Week view with daily breakdown of assignments
 - [ ] **SCHED-03**: Day view showing detailed schedule per resource
 - [ ] **SCHED-04**: Crew availability visible on calendar (free, booked, unavailable)
-- [ ] **SCHED-05**: Conflict detection prevents double-booking crew across overlapping jobs
+- [x] **SCHED-05**: Conflict detection prevents double-booking crew across overlapping jobs
 - [ ] **SCHED-06**: Calendar export via iCal for crew to sync with personal calendars
 
 ### Messaging
@@ -165,8 +165,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | JOBS-05 | Phase 2 | Complete |
 | JOBS-06 | Phase 2 | Complete |
 | CREW-01 | Phase 3 | Complete |
-| CREW-02 | Phase 3 | Pending |
-| CREW-03 | Phase 3 | Pending |
+| CREW-02 | Phase 3 | Complete |
+| CREW-03 | Phase 3 | Complete |
 | CREW-04 | Phase 3 | Pending |
 | CREW-05 | Phase 3 | Pending |
 | CREW-06 | Phase 3 | Pending |
@@ -181,7 +181,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SCHED-02 | Phase 4 | Pending |
 | SCHED-03 | Phase 4 | Pending |
 | SCHED-04 | Phase 4 | Pending |
-| SCHED-05 | Phase 3 | Pending |
+| SCHED-05 | Phase 3 | Complete |
 | SCHED-06 | Phase 4 | Pending |
 | MSG-01 | Phase 5 | Pending |
 | MSG-02 | Phase 5 | Pending |

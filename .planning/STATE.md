@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 03-01-PLAN.md
-last_updated: "2026-05-16T00:13:52.142Z"
+stopped_at: Completed 03-02-PLAN.md
+last_updated: "2026-05-16T00:21:09.882Z"
 progress:
   total_phases: 3
   completed_phases: 2
   total_plans: 11
-  completed_plans: 7
+  completed_plans: 8
 ---
 
 # Project State: Duct Tape
@@ -26,13 +26,13 @@ progress:
 ## Current Position
 
 Phase: 03 (resource-management) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5
 
 ### Phase Context
 
 Goal: Resource management with crew profiles, equipment inventory, and conflict detection
 
-Next action: Execute Plan 03-02 (Crew CRUD endpoints)
+Next action: Execute Plan 03-03 (Equipment CRUD endpoints)
 
 ## Performance Metrics
 
@@ -51,6 +51,7 @@ Next action: Execute Plan 03-02 (Crew CRUD endpoints)
 | 02    | P02  | 142s     | 2     | 3     | 2026-05-16 |
 | 02    | P03  | 221s     | 2     | 5     | 2026-05-16 |
 | Phase 03 P01 | 187 | 3 tasks | 10 files |
+| Phase 03 P02 | 226 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -74,6 +75,9 @@ Next action: Execute Plan 03-02 (Crew CRUD endpoints)
 | CrewProfile 1:1 with User via unique FK | Phase 3 P01 | 2026-05-16 | Separates auth concerns from crew data, preserves Phase 1 User model |
 | PostgreSQL ARRAY(String) for skills | Phase 3 P01 | 2026-05-16 | Flexible tenant-scoped vocabulary, no separate skills table needed |
 | Equipment quantity pool tracking | Phase 3 P01 | 2026-05-16 | Simpler than individual item tracking, sufficient for v1 |
+| Overlap logic: start1 < end2 AND start2 < end1 | Phase 3 P02 | 2026-05-16 | Touching boundaries don't conflict (job1 ends 12pm, job2 starts 12pm is valid) |
+| Role filter uses subquery on CrewAssignment.role | Phase 3 P02 | 2026-05-16 | Enables filtering by functional role (Camera Operator, Sound Tech) from job history |
+| Only CONFIRMED assignments trigger conflicts | Phase 3 P02 | 2026-05-16 | PENDING/DECLINED excluded to avoid blocking crew on unconfirmed requests |
 
 ### Open Questions
 
@@ -99,26 +103,28 @@ Next action: Execute Plan 03-02 (Crew CRUD endpoints)
 
 ## Session Continuity
 
-**Last session:** 2026-05-16T00:13:52.138Z
-**Stopped at:** Completed 03-01-PLAN.md
+**Last session:** 2026-05-16T00:21:09.878Z
+**Stopped at:** Completed 03-02-PLAN.md
 
 **What changed this session:**
 
-- Executed Plan 02-03: Job state transition validation
-- Created state_machine.py with ALLOWED_TRANSITIONS dict and validation functions
-- Added POST /api/v1/jobs/{id}/transition endpoint with admin-only access
-- State machine enforces valid transitions (intake→simmer/active, etc.)
-- COMPLETE is terminal state (no outbound transitions)
-- Backward transitions allowed (simmer→intake, active→simmer)
-- Made 4 atomic commits (TDD: RED + GREEN for 2 tasks)
-- PostgreSQL unavailable: 11 integration tests + 10 unit tests written but not executed
+- Executed Plan 03-02: Crew CRUD + Conflict Detection
+- Created conflicts.py with time overlap detection and equipment pool tracking
+- Implemented check_crew_conflicts (start1 < end2 AND start2 < end1 logic)
+- Implemented check_equipment_availability (sums quantity_assigned across overlaps)
+- Implemented check_crew_availability_patterns (day_of_week recurring schedules)
+- Created crew router with 6 endpoints (create, list/search, get, update, archive, unarchive)
+- Search supports email/bio/phone, role filter via CrewAssignment subquery, skills filter with AND logic
+- Made 2 atomic commits (Task 1: conflicts core, Task 2: crew CRUD)
+- PostgreSQL unavailable: 29 tests written (10 unit tests + 19 integration tests) but not executed
 
 **Context for next session:**
 
-- Phase 02 (Job Management) COMPLETE - all 3 plans finished
-- Job lifecycle fully implemented: CRUD + state machine + validation
-- Next: Phase 03 planning (Resource Management - crew and equipment)
-- Tests ready to run once PostgreSQL available (21 test functions across test_job_transitions.py + test_state_machine.py)
+- Phase 03 Plan 02 COMPLETE - crew directory and conflict detection core operational
+- Conflict detection ready for use by assignment endpoints (Plan 03-04)
+- Test fixtures available (test_crew_profile, test_job) for equipment and assignment tests
+- Next: Plan 03-03 (Equipment CRUD endpoints with category filtering)
+- Tests ready to run once PostgreSQL available (29 test functions across test_conflicts.py + test_crew_crud.py)
 
 ---
 
