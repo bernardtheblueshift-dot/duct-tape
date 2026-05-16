@@ -121,3 +121,35 @@ Plans:
 - [x] 04-03-PLAN.md — iCal feed generation + token management endpoints (Wave 2) ✓
 
 ---
+
+### Phase 5: Coordination Layer (Messaging + Tasks + Files)
+**Goal**: Job-scoped collaboration tools — threaded messaging with real-time delivery, task management with assignees and deadlines, and file sharing with tenant-isolated storage
+
+**Depends on**: Phase 1, Phase 2, Phase 3
+
+**Requirements**: MSG-01, MSG-02, MSG-03, MSG-04, TASK-01, TASK-02, TASK-03, TASK-04, TASK-05, FILE-01, FILE-02, FILE-03, FILE-04
+
+**Success Criteria** (what must be TRUE):
+  1. Users can send threaded messages within a job channel
+  2. Messages support text with basic formatting
+  3. Message history is searchable within a job
+  4. Messages deliver in real-time via WebSockets
+  5. Admin can create tasks linked to a job with assignee, deadline, and priority
+  6. Tasks follow status workflow: todo → in progress → done
+  7. Crew can view and update tasks assigned to them
+  8. Tasks can reference messages for context
+  9. Users can upload files to a job (briefs, runsheets, photos, videos, docs)
+  10. File preview for images and PDFs
+  11. Files organized per job with upload metadata (who, when, size)
+  12. Secure file storage with tenant isolation
+
+**Plans**: 5 plans in 3 waves
+
+Plans:
+- [ ] 05-01-PLAN.md — Models, schemas, core utilities, and migration for all coordination features (Wave 1)
+- [ ] 05-02-PLAN.md — Messages REST API + WebSocket real-time delivery + tests (Wave 2)
+- [ ] 05-03-PLAN.md — Tasks REST API with permissions and state transitions + tests (Wave 2)
+- [ ] 05-04-PLAN.md — Files upload, serve, delete API with tenant isolation + tests (Wave 2)
+- [ ] 05-05-PLAN.md — JobResponse enrichment with coordination summary data (Wave 3)
+
+---
