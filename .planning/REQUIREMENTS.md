@@ -93,7 +93,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **UI-01**: Dark theme with event production aesthetic
 - [x] **UI-02**: Mobile-responsive design (works on phones without native app)
-- [ ] **UI-03**: Admin dashboard with at-a-glance view of upcoming jobs and resource status
+- [x] **UI-03**: Admin dashboard with at-a-glance view of upcoming jobs and resource status
 
 ## v2 Requirements
 
@@ -205,7 +205,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PORT-04 | Phase 7 | Complete |
 | UI-01 | Phase 8 | Complete |
 | UI-02 | Phase 8 | Complete |
-| UI-03 | Phase 8 | Pending |
+| UI-03 | Phase 8 | Complete |
 
 **Coverage:**
 - v1 requirements: 43 total
