@@ -1,6 +1,6 @@
 """Job CRUD endpoints with admin-only write operations and RLS tenant isolation"""
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_, func
 from datetime import datetime, timezone
@@ -200,6 +200,8 @@ async def list_jobs(
     venue: str | None = None,
     start_date: datetime | None = None,
     end_date: datetime | None = None,
+    limit: int = Query(default=50, le=200, ge=1),
+    offset: int = Query(default=0, ge=0),
     tenant_id: str = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db),
 ):
@@ -212,6 +214,8 @@ async def list_jobs(
     - venue: Filter by venue (case-insensitive partial match)
     - start_date: Jobs scheduled on or after this date
     - end_date: Jobs scheduled on or before this date
+    - limit: Max results (1-200, default 50)
+    - offset: Skip N results (default 0)
 
     Results ordered by scheduled_start descending (most recent first).
     Populates assigned_crew and assigned_gear for each job.
@@ -250,6 +254,9 @@ async def list_jobs(
 
     # Order by scheduled_start descending (most recent first)
     query = query.order_by(Job.scheduled_start.desc())
+
+    # Apply pagination
+    query = query.limit(limit).offset(offset)
 
     result = await db.execute(query)
     jobs = list(result.scalars().all())

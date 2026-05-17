@@ -3,11 +3,10 @@ import pytest_asyncio
 from unittest.mock import patch, MagicMock
 import sys
 
-# Mock magic module before any app imports
 sys.modules['magic'] = MagicMock()
 
 from httpx import AsyncClient, ASGITransport
-from sqlalchemy import text
+from sqlalchemy import text, event
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from app.models.base import Base
 from app.models import User, Tenant, UserRole
@@ -19,23 +18,38 @@ from app.core.security import hash_password, create_access_token
 
 TEST_DATABASE_URL = settings.DATABASE_URL.replace("/duct_tape", "/duct_tape_test")
 
+engine = create_async_engine(TEST_DATABASE_URL, echo=False)
+
+
+@pytest_asyncio.fixture(scope="session", autouse=True)
+async def setup_database():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+    await engine.dispose()
+
 
 @pytest_asyncio.fixture(scope="function")
 async def test_db():
-    engine = create_async_engine(TEST_DATABASE_URL, echo=False)
-    session_factory = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    connection = await engine.connect()
+    transaction = await connection.begin()
+    session = AsyncSession(bind=connection, expire_on_commit=False)
 
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    # Disable the outer commit in get_db since we control the transaction
+    await connection.begin_nested()
 
-    async with session_factory() as session:
-        yield session
+    @event.listens_for(session.sync_session, "after_transaction_end")
+    def restart_savepoint(session_inner, transaction_inner):
+        if transaction_inner.nested and not transaction_inner._parent.nested:
+            session_inner.begin_nested()
 
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+    yield session
 
-    await engine.dispose()
-
+    await session.close()
+    await transaction.rollback()
+    await connection.close()
 
 
 @pytest_asyncio.fixture(scope="function")

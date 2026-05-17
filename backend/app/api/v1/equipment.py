@@ -1,6 +1,6 @@
 """Equipment CRUD endpoints with inventory search, condition tracking, and admin-only write operations"""
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_
 from typing import List
@@ -52,6 +52,8 @@ async def list_equipment(
     search: str | None = None,
     category: str | None = None,
     condition: EquipmentCondition | None = None,
+    limit: int = Query(default=50, le=200, ge=1),
+    offset: int = Query(default=0, ge=0),
     tenant_id: str = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db),
 ):
@@ -62,6 +64,8 @@ async def list_equipment(
     - search: Case-insensitive search across name and notes
     - category: Filter by category (case-insensitive partial match)
     - condition: Filter by condition (good/fair/poor/maintenance)
+    - limit: Max results (1-200, default 50)
+    - offset: Skip N results (default 0)
 
     Results ordered by name ascending.
     RLS automatically filters by tenant.
@@ -88,6 +92,9 @@ async def list_equipment(
 
     # Order by name ascending
     query = query.order_by(Equipment.name.asc())
+
+    # Apply pagination
+    query = query.limit(limit).offset(offset)
 
     result = await db.execute(query)
     equipment_items = result.scalars().all()

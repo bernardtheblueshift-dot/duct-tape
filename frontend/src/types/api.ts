@@ -383,6 +383,7 @@ export interface PortalJobDetailResponse {
   scheduled_end: string | null;
   state: string;
   crew_role: string | null;
+  assignment_id: string;
   assignment_status: string;
   files: PortalFileItem[];
 }

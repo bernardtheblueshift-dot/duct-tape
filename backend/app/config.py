@@ -19,3 +19,11 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+import sys
+
+_INSECURE_DEFAULTS = {"change-this-to-random-secret-in-production", "secret", "changeme"}
+
+if not settings.DEBUG and settings.SECRET_KEY in _INSECURE_DEFAULTS:
+    print("FATAL: SECRET_KEY must be changed from the default value in production", file=sys.stderr)
+    sys.exit(1)

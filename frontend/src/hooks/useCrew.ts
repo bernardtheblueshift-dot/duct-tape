@@ -56,3 +56,11 @@ export function useArchiveCrew() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['crew'] }),
   });
 }
+
+export function useUnarchiveCrew() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.crew.unarchive(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['crew'] }),
+  });
+}

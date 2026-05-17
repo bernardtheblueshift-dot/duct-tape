@@ -32,7 +32,9 @@ export function CalendarPage() {
   const navigate = useNavigate();
 
   const { data, isLoading } = useCalendarEvents(currentDate);
+  const { data: weekData, isLoading: weekLoading } = useWeekCalendarEvents(currentDate);
   const events = data?.events || [];
+  const weekEvents = weekData?.events || [];
 
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
@@ -49,6 +51,18 @@ export function CalendarPage() {
     });
   };
 
+  const getWeekEventsForDay = (day: Date): CalendarEvent[] => {
+    const dayStart = startOfDay(day);
+    const dayEnd = new Date(day);
+    dayEnd.setHours(23, 59, 59, 999);
+
+    return weekEvents.filter((event) => {
+      const eventStart = parseISO(event.start);
+      const eventEnd = parseISO(event.end);
+      return eventStart <= dayEnd && eventEnd >= dayStart;
+    });
+  };
+
   const handlePrevMonth = () => setCurrentDate(subMonths(currentDate, 1));
   const handleNextMonth = () => setCurrentDate(addMonths(currentDate, 1));
 
@@ -59,27 +73,12 @@ export function CalendarPage() {
   };
 
   if (view === 'week') {
-    const { data: weekData, isLoading: weekLoading } = useWeekCalendarEvents(currentDate);
-    const weekEvents = weekData?.events || [];
-
     const weekStart = startOfWeek(currentDate);
     const weekEnd = endOfWeek(currentDate);
     const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
 
     const handlePrevWeek = () => setCurrentDate(subWeeks(currentDate, 1));
     const handleNextWeek = () => setCurrentDate(addWeeks(currentDate, 1));
-
-    const getEventsForDay = (day: Date): CalendarEvent[] => {
-      const dayStart = startOfDay(day);
-      const dayEnd = new Date(day);
-      dayEnd.setHours(23, 59, 59, 999);
-
-      return weekEvents.filter((event) => {
-        const eventStart = parseISO(event.start);
-        const eventEnd = parseISO(event.end);
-        return eventStart <= dayEnd && eventEnd >= dayStart;
-      });
-    };
 
     const calculateEventPosition = (event: CalendarEvent, day: Date) => {
       const eventStart = parseISO(event.start);
@@ -190,7 +189,7 @@ export function CalendarPage() {
                         >
                           {/* Events for this hour slot - only render on first hour to avoid duplication */}
                           {hour === 0 &&
-                            getEventsForDay(day).map((event) => {
+                            getWeekEventsForDay(day).map((event) => {
                               const { top, height } = calculateEventPosition(event, day);
                               return (
                                 <div
@@ -220,7 +219,7 @@ export function CalendarPage() {
             {/* Mobile: day list */}
             <div className="md:hidden space-y-4">
               {weekDays.map((day) => {
-                const dayEvents = getEventsForDay(day);
+                const dayEvents = getWeekEventsForDay(day);
                 return (
                   <div key={day.toISOString()} className="bg-surface rounded-lg border border-border overflow-hidden">
                     <div

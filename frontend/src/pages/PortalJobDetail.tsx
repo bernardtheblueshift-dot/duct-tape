@@ -24,13 +24,8 @@ export function PortalJobDetailPage() {
   }
 
   const handleConfirm = async () => {
-    // Job detail doesn't have assignment_id, need to get from assignments
-    // For now we can use the job_id to find the assignment
-    // This is a simplification - in production we'd pass assignment_id through
-    // For v1, portal.confirmAssignment expects assignment_id
-    // We'll need to refetch assignments or store it in state
-    // Let's assume we can derive it from the job context
-    alert('Confirm functionality requires assignment_id from portal context');
+    if (!job?.assignment_id) return;
+    await confirmMut.mutateAsync(job.assignment_id);
   };
 
   const handleDeclineClick = () => {
@@ -39,7 +34,8 @@ export function PortalJobDetailPage() {
   };
 
   const handleDeclineSubmit = async () => {
-    alert('Decline functionality requires assignment_id from portal context');
+    if (!job?.assignment_id) return;
+    await declineMut.mutateAsync({ id: job.assignment_id, reason: declineReason || undefined });
     setShowDeclineModal(false);
   };
 

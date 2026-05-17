@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import {
@@ -29,12 +29,12 @@ export function PortalPage() {
   const [profileEdited, setProfileEdited] = useState(false);
 
   // Initialize profile fields when data loads
-  useState(() => {
+  useEffect(() => {
     if (profile && !profileEdited) {
       setPhone(profile.phone || '');
       setBio(profile.bio || '');
     }
-  });
+  }, [profile]);
 
   const handleConfirm = async (id: string) => {
     await confirmMut.mutateAsync(id);

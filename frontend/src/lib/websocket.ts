@@ -1,4 +1,5 @@
-type MessageHandler = (data: any) => void;
+type WsMessage = { type: string; job_id?: string; data?: unknown };
+type MessageHandler = (data: WsMessage) => void;
 
 class WebSocketManager {
   private ws: WebSocket | null = null;
@@ -6,6 +7,7 @@ class WebSocketManager {
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
   private token: string | null = null;
+  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
   connect(token: string) {
     this.token = token;
@@ -31,7 +33,7 @@ class WebSocketManager {
     this.ws.onclose = () => {
       if (this.reconnectAttempts < this.maxReconnectAttempts && this.token) {
         const delay = 1000 * Math.pow(2, this.reconnectAttempts);
-        setTimeout(() => {
+        this.reconnectTimer = setTimeout(() => {
           this.reconnectAttempts++;
           if (this.token) this.connect(this.token);
         }, delay);
@@ -40,6 +42,10 @@ class WebSocketManager {
   }
 
   disconnect() {
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
     this.token = null;
     this.ws?.close();
     this.ws = null;

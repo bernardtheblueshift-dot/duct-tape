@@ -64,6 +64,18 @@ def create_refresh_token(user_id: str) -> str:
     return jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
 
 
+def create_ws_token(user_id: str, tenant_id: str, role: str) -> str:
+    expire = datetime.now(timezone.utc) + timedelta(seconds=30)
+    payload = {
+        "sub": user_id,
+        "tenant_id": tenant_id,
+        "role": role,
+        "type": "ws",
+        "exp": expire,
+    }
+    return jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+
+
 def decode_access_token(token: str) -> Dict:
     """
     Decode and verify a JWT access token

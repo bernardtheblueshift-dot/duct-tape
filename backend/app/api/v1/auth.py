@@ -1,9 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response, Cookie
+from fastapi import APIRouter, Depends, HTTPException, status, Response, Cookie, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from datetime import datetime, timezone
 import jwt
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from app.database import get_db
 from app.schemas.auth import (
@@ -27,12 +29,15 @@ from app.core.security import (
 )
 from app.tasks.email import send_verification_email, send_password_reset_email
 from app.config import settings
+import logging
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
+limiter = Limiter(key_func=get_remote_address)
 
 
 @router.post("/register", response_model=MessageResponse)
-async def register(request: RegisterRequest, db: AsyncSession = Depends(get_db)):
+@limiter.limit("3/minute")
+async def register(request: Request, register_data: RegisterRequest, db: AsyncSession = Depends(get_db)):
     """
     Register new user and create tenant.
 
@@ -40,24 +45,21 @@ async def register(request: RegisterRequest, db: AsyncSession = Depends(get_db))
     User account is inactive until email is verified.
     """
     # Check if email already exists
-    result = await db.execute(select(User).where(User.email == request.email))
+    result = await db.execute(select(User).where(User.email == register_data.email))
     existing_user = result.scalar_one_or_none()
 
     if existing_user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered",
-        )
+        return MessageResponse(message="If this email is available, a verification email will be sent")
 
     # Create tenant
-    tenant = Tenant(name=request.company_name)
+    tenant = Tenant(name=register_data.company_name)
     db.add(tenant)
     await db.flush()  # Get tenant.id
 
     # Create admin user
     user = User(
-        email=request.email,
-        hashed_password=hash_password(request.password),
+        email=register_data.email,
+        hashed_password=hash_password(register_data.password),
         tenant_id=tenant.id,
         role=UserRole.ADMIN,
         is_active=settings.DEBUG,  # Auto-activate in dev mode, require email verification in prod
@@ -73,14 +75,15 @@ async def register(request: RegisterRequest, db: AsyncSession = Depends(get_db))
     # Send verification email (async via Celery)
     try:
         send_verification_email.delay(user.email, verification_token.token)
-    except Exception:
-        pass  # Celery/broker unavailable — user can still verify via token
+    except Exception as e:
+        logging.getLogger(__name__).warning("Failed to queue email: %s", e)
 
     return MessageResponse(message="Verification email sent")
 
 
 @router.post("/verify-email", response_model=MessageResponse)
-async def verify_email(request: VerifyEmailRequest, db: AsyncSession = Depends(get_db)):
+@limiter.limit("5/minute")
+async def verify_email(request: Request, verify_data: VerifyEmailRequest, db: AsyncSession = Depends(get_db)):
     """
     Verify user email address with token.
 
@@ -88,7 +91,7 @@ async def verify_email(request: VerifyEmailRequest, db: AsyncSession = Depends(g
     """
     # Query verification token
     result = await db.execute(
-        select(VerificationToken).where(VerificationToken.token == request.token)
+        select(VerificationToken).where(VerificationToken.token == verify_data.token)
     )
     token = result.scalar_one_or_none()
 
@@ -119,9 +122,11 @@ async def verify_email(request: VerifyEmailRequest, db: AsyncSession = Depends(g
 
 
 @router.post("/login", response_model=MessageResponse)
+@limiter.limit("5/minute")
 async def login(
+    request: Request,
     response: Response,
-    request: LoginRequest,
+    login_data: LoginRequest,
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -130,7 +135,7 @@ async def login(
     Returns JWT tokens in httpOnly cookies.
     """
     # Query user by email (no tenant filter - login happens before tenant context)
-    result = await db.execute(select(User).where(User.email == request.email))
+    result = await db.execute(select(User).where(User.email == login_data.email))
     user = result.scalar_one_or_none()
 
     if not user:
@@ -140,7 +145,7 @@ async def login(
         )
 
     # Verify password
-    if not verify_password(request.password, user.hashed_password):
+    if not verify_password(login_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials",
@@ -157,31 +162,37 @@ async def login(
     access_token = create_access_token(
         str(user.id), str(user.tenant_id), user.role.value
     )
-    refresh_token = create_refresh_token(str(user.id))
+    from app.models.refresh_token import RefreshToken
+    refresh_obj, raw_refresh_token = RefreshToken.create_for_user(user.id)
+    db.add(refresh_obj)
+    await db.flush()
 
-    # Set cookies
+    # Set cookies (secure=False in dev so browsers accept over HTTP)
+    _secure = not settings.DEBUG
     response.set_cookie(
         key="access_token",
         value=access_token,
         httponly=True,
-        secure=True,
+        secure=_secure,
         samesite="lax",
-        max_age=15 * 60,  # 15 minutes
+        max_age=15 * 60,
     )
     response.set_cookie(
         key="refresh_token",
-        value=refresh_token,
+        value=raw_refresh_token,
         httponly=True,
-        secure=True,
+        secure=_secure,
         samesite="lax",
-        max_age=7 * 24 * 60 * 60,  # 7 days
+        max_age=7 * 24 * 60 * 60,
     )
 
     return MessageResponse(message="Login successful")
 
 
 @router.post("/refresh", response_model=MessageResponse)
+@limiter.limit("10/minute")
 async def refresh(
+    request: Request,
     response: Response,
     refresh_token: str = Cookie(None),
     db: AsyncSession = Depends(get_db),
@@ -189,7 +200,7 @@ async def refresh(
     """
     Refresh access token using refresh token from cookie.
 
-    Returns new access token in httpOnly cookie.
+    Rotates refresh token on each use for security.
     """
     if not refresh_token:
         raise HTTPException(
@@ -197,28 +208,25 @@ async def refresh(
             detail="Refresh token missing",
         )
 
-    # Decode refresh token
-    try:
-        payload = jwt.decode(refresh_token, settings.SECRET_KEY, algorithms=["HS256"])
-        if payload.get("type") != "refresh":
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token type",
-            )
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Refresh token expired",
+    from app.models.refresh_token import RefreshToken
+
+    token_hash = RefreshToken.hash_token(refresh_token)
+    result = await db.execute(
+        select(RefreshToken).where(
+            RefreshToken.token_hash == token_hash,
+            RefreshToken.revoked == False,
         )
-    except jwt.InvalidTokenError:
+    )
+    stored_token = result.scalar_one_or_none()
+
+    if not stored_token or stored_token.expires_at < datetime.now(timezone.utc):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid refresh token",
+            detail="Invalid or expired refresh token",
         )
 
     # Get user
-    user_id = payload.get("sub")
-    result = await db.execute(select(User).where(User.id == user_id))
+    result = await db.execute(select(User).where(User.id == stored_token.user_id))
     user = result.scalar_one_or_none()
 
     if not user:
@@ -227,27 +235,42 @@ async def refresh(
             detail="User not found",
         )
 
-    # Create new access token
+    # Rotate: revoke old token, create new one
+    stored_token.revoked = True
+    new_refresh_obj, new_raw_token = RefreshToken.create_for_user(user.id)
+    db.add(new_refresh_obj)
+
     access_token = create_access_token(
         str(user.id), str(user.tenant_id), user.role.value
     )
 
-    # Set new access token cookie
+    _secure = not settings.DEBUG
     response.set_cookie(
         key="access_token",
         value=access_token,
         httponly=True,
-        secure=True,
+        secure=_secure,
         samesite="lax",
-        max_age=15 * 60,  # 15 minutes
+        max_age=15 * 60,
     )
+    response.set_cookie(
+        key="refresh_token",
+        value=new_raw_token,
+        httponly=True,
+        secure=_secure,
+        samesite="lax",
+        max_age=7 * 24 * 60 * 60,
+    )
+
+    await db.flush()
 
     return MessageResponse(message="Token refreshed")
 
 
 @router.post("/reset-password-request", response_model=MessageResponse)
+@limiter.limit("3/minute")
 async def reset_password_request(
-    request: PasswordResetRequest, db: AsyncSession = Depends(get_db)
+    request: Request, reset_data: PasswordResetRequest, db: AsyncSession = Depends(get_db)
 ):
     """
     Request password reset email.
@@ -255,10 +278,14 @@ async def reset_password_request(
     Always returns success to avoid leaking user existence.
     """
     # Query user by email
-    result = await db.execute(select(User).where(User.email == request.email))
+    result = await db.execute(select(User).where(User.email == reset_data.email))
     user = result.scalar_one_or_none()
 
     if user:
+        # Invalidate previous reset tokens
+        from sqlalchemy import delete as sql_delete
+        await db.execute(sql_delete(PasswordResetToken).where(PasswordResetToken.user_id == user.id))
+
         # Create password reset token
         reset_token = PasswordResetToken.create_for_user(user.id)
         db.add(reset_token)
@@ -267,16 +294,17 @@ async def reset_password_request(
         # Send reset email (async via Celery)
         try:
             send_password_reset_email.delay(user.email, reset_token.token)
-        except Exception:
-            pass
+        except Exception as e:
+            logging.getLogger(__name__).warning("Failed to queue email: %s", e)
 
     # Always return success (don't leak user existence)
     return MessageResponse(message="Password reset email sent if account exists")
 
 
 @router.post("/reset-password", response_model=MessageResponse)
+@limiter.limit("5/minute")
 async def reset_password(
-    request: PasswordResetConfirm, db: AsyncSession = Depends(get_db)
+    request: Request, reset_confirm: PasswordResetConfirm, db: AsyncSession = Depends(get_db)
 ):
     """
     Reset password with token.
@@ -285,7 +313,7 @@ async def reset_password(
     """
     # Query password reset token
     result = await db.execute(
-        select(PasswordResetToken).where(PasswordResetToken.token == request.token)
+        select(PasswordResetToken).where(PasswordResetToken.token == reset_confirm.token)
     )
     token = result.scalar_one_or_none()
 
@@ -306,7 +334,7 @@ async def reset_password(
         )
 
     # Update password
-    user.hashed_password = hash_password(request.new_password)
+    user.hashed_password = hash_password(reset_confirm.new_password)
 
     # Delete reset token
     await db.delete(token)
@@ -316,12 +344,28 @@ async def reset_password(
 
 
 @router.post("/logout", response_model=MessageResponse)
-async def logout(response: Response):
+async def logout(
+    response: Response,
+    refresh_token: str = Cookie(None),
+    db: AsyncSession = Depends(get_db),
+):
     """
-    Logout user by clearing auth cookies.
+    Logout user by clearing auth cookies and revoking refresh token.
     """
-    response.set_cookie(key="access_token", value="", max_age=0)
-    response.set_cookie(key="refresh_token", value="", max_age=0)
+    if refresh_token:
+        from app.models.refresh_token import RefreshToken
+        token_hash = RefreshToken.hash_token(refresh_token)
+        result = await db.execute(
+            select(RefreshToken).where(RefreshToken.token_hash == token_hash)
+        )
+        stored = result.scalar_one_or_none()
+        if stored:
+            stored.revoked = True
+            await db.flush()
+
+    _secure = not settings.DEBUG
+    response.set_cookie(key="access_token", value="", max_age=0, httponly=True, secure=_secure, samesite="lax")
+    response.set_cookie(key="refresh_token", value="", max_age=0, httponly=True, secure=_secure, samesite="lax")
 
     return MessageResponse(message="Logged out")
 
@@ -397,4 +441,6 @@ async def get_ws_token(
             detail="User not found",
         )
 
-    return {"token": access_token}
+    from app.core.security import create_ws_token
+    ws_token = create_ws_token(str(user.id), str(user.tenant_id), user.role.value)
+    return {"token": ws_token}

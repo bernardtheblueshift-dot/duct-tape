@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useCrew, useCrewRatings, useCrewAvailability, useArchiveCrew } from '@/hooks/useCrew';
+import { useCrew, useCrewRatings, useCrewAvailability, useArchiveCrew, useUnarchiveCrew } from '@/hooks/useCrew';
 import { ArrowLeft } from 'lucide-react';
 
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -11,6 +11,7 @@ export function CrewDetailPage() {
   const { data: ratings } = useCrewRatings(crewId!);
   const { data: availability } = useCrewAvailability(crewId!);
   const archiveMutation = useArchiveCrew();
+  const unarchiveMutation = useUnarchiveCrew();
 
   if (isLoading) {
     return (
@@ -27,7 +28,11 @@ export function CrewDetailPage() {
 
   const handleArchive = () => {
     if (confirm(crew.archived_at ? 'Unarchive this crew member?' : 'Archive this crew member?')) {
-      archiveMutation.mutate(crew.id);
+      if (crew.archived_at) {
+        unarchiveMutation.mutate(crew.id);
+      } else {
+        archiveMutation.mutate(crew.id);
+      }
     }
   };
 

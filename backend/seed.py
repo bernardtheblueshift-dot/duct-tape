@@ -266,6 +266,23 @@ async def seed():
 
         await db.commit()
 
+    # Re-apply RLS policies (create_all doesn't include these)
+    async with engine.begin() as conn:
+        policy_tables = [
+            'jobs', 'crew_profiles', 'equipment', 'crew_assignments',
+            'equipment_assignments', 'availability_patterns', 'crew_ratings',
+            'users', 'invitation_tokens', 'ical_tokens', 'messages', 'tasks',
+            'job_files', 'message_last_seen',
+        ]
+        for t in policy_tables:
+            await conn.execute(text(f"ALTER TABLE {t} ENABLE ROW LEVEL SECURITY"))
+            await conn.execute(text(f"DROP POLICY IF EXISTS tenant_isolation ON {t}"))
+            await conn.execute(text(f"""
+                CREATE POLICY tenant_isolation ON {t}
+                USING (tenant_id::text = COALESCE(NULLIF(current_setting('app.current_tenant_id', TRUE), ''), '00000000-0000-0000-0000-000000000000'))
+            """))
+        print("RLS policies applied.")
+
     print("Seed complete!")
     print()
     print("Login credentials:")

@@ -19,6 +19,7 @@ from app.models.message_last_seen import MessageLastSeen
 from app.models.task import Task, TaskStatus, TaskPriority
 from app.models.file import JobFile
 from app.models.message_file import message_files
+from app.models.refresh_token import RefreshToken
 
 __all__ = [
     "Base",
@@ -49,4 +50,5 @@ __all__ = [
     "TaskPriority",
     "JobFile",
     "message_files",
+    "RefreshToken",
 ]

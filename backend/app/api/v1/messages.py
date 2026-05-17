@@ -1,6 +1,6 @@
 """Message endpoints for job-scoped threaded messaging with WebSocket broadcast"""
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import List
@@ -104,6 +104,8 @@ async def create_message(
 async def list_messages(
     job_id: UUID,
     search: str | None = None,
+    limit: int = Query(default=100, le=500, ge=1),
+    offset: int = Query(default=0, ge=0),
     current_user: User = Depends(require_active),
     tenant_id: str = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db),
@@ -114,6 +116,10 @@ async def list_messages(
     Both admin and crew can read messages.
     Results ordered oldest first (chat-style).
     Updates last-seen timestamp for this user+job.
+
+    Query parameters:
+    - limit: Max results (1-500, default 100)
+    - offset: Skip N results (default 0)
     """
     query = select(Message).where(Message.job_id == job_id)
 
@@ -123,6 +129,9 @@ async def list_messages(
 
     # Order by created_at ascending (oldest first, chat-style)
     query = query.order_by(Message.created_at.asc())
+
+    # Apply pagination
+    query = query.limit(limit).offset(offset)
 
     result = await db.execute(query)
     messages = result.scalars().all()

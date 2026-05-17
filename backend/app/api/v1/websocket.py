@@ -20,27 +20,33 @@ async def websocket_endpoint(websocket: WebSocket, token: str):
     try:
         payload = decode_access_token(token)
         user_id = payload.get("sub")
+        tenant_id = payload.get("tenant_id")
         if not user_id:
-            await websocket.close(code=1008)  # Policy Violation
+            await websocket.close(code=1008)
             return
     except Exception:
-        # decode_access_token raises HTTPException, but WebSocket needs different handling
-        await websocket.close(code=1008)  # Policy Violation
+        await websocket.close(code=1008)
         return
 
-    # Connect user to WebSocket manager
     await manager.connect(str(user_id), websocket)
 
     try:
-        # Message handling loop
         while True:
             data = await websocket.receive_json()
             action = data.get("action")
 
             if action == "subscribe":
                 job_id = data.get("job_id")
-                if job_id:
-                    await manager.subscribe(str(user_id), job_id)
+                if job_id and tenant_id:
+                    # Validate job belongs to user's tenant
+                    from sqlalchemy import select, text
+                    from app.database import AsyncSessionLocal
+                    from app.models.job import Job
+                    async with AsyncSessionLocal() as db:
+                        await db.execute(text(f"SET LOCAL app.current_tenant_id = '{tenant_id}'"))
+                        result = await db.execute(select(Job.id).where(Job.id == job_id))
+                        if result.scalar_one_or_none():
+                            await manager.subscribe(str(user_id), job_id)
 
             elif action == "unsubscribe":
                 job_id = data.get("job_id")
@@ -51,5 +57,4 @@ async def websocket_endpoint(websocket: WebSocket, token: str):
                 await websocket.send_json({"type": "pong"})
 
     except WebSocketDisconnect:
-        # Client disconnected normally
         manager.disconnect(str(user_id))

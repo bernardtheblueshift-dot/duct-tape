@@ -41,7 +41,7 @@ export function UpcomingJobsList({ jobs }: UpcomingJobsListProps) {
               <div className="flex items-center gap-2 mb-1">
                 <JobStateBadge state={job.state} />
                 <h3 className="font-medium truncate">
-                  {job.title.length > 40 ? `${job.title.slice(0, 40)}...` : job.title}
+                  {job.title}
                 </h3>
               </div>
               {job.venue && (

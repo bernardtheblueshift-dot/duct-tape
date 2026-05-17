@@ -4,46 +4,76 @@ Crew and resource management for event production companies.
 
 When a job ignites, see who's available, what gear is free, and assign resources from one place — replacing spreadsheets, memory, and scattered messages.
 
-## Demo
-
-Seed the database with realistic event production data and start exploring immediately.
+## Quick Start
 
 ### Prerequisites
 
-- Python 3.12+
-- Node.js 20+
-- PostgreSQL 16
-- Redis
+- [Python 3.12+](https://python.org/downloads/)
+- [Node.js 18+](https://nodejs.org/)
+- [Docker Desktop](https://docker.com/products/docker-desktop/) (for PostgreSQL, Redis, mail server)
 
-### Setup (5 minutes)
+### One-Command Setup
 
 ```bash
-# 1. Database
-psql -c "CREATE USER duct_tape_dev WITH PASSWORD 'duct_tape_dev';"
-psql -c "CREATE DATABASE duct_tape OWNER duct_tape_dev;"
-
-# 2. Backend
-cd backend
-cp .env.example .env
-pip install -e ".[dev]"
-python3 seed.py          # Creates tables + demo data
-
-# 3. Frontend (new terminal)
-cd frontend
-npm install
+python3 setup.py
 ```
+
+On Windows:
+```powershell
+python setup.py
+```
+
+This installs all dependencies, starts Docker services, creates the database, and seeds it with demo data. Takes about 2 minutes.
 
 ### Run
 
 ```bash
 # Terminal 1 — Backend
-cd backend && uvicorn app.main:app --reload
+cd backend && uvicorn app.main:app --reload --port 8000
 
 # Terminal 2 — Frontend
 cd frontend && npm run dev
 ```
 
+On Windows use `python -m uvicorn app.main:app --reload --port 8000` instead.
+
 Open http://localhost:5173
+
+### Manual Setup (no Docker)
+
+If you prefer to run PostgreSQL and Redis natively:
+
+1. Create a PostgreSQL database:
+   ```sql
+   CREATE USER duct_tape WITH PASSWORD 'dev_password';
+   CREATE DATABASE duct_tape OWNER duct_tape;
+   ```
+
+2. Start Redis with a password:
+   ```bash
+   redis-server --requirepass dev_redis_pass
+   ```
+
+3. Copy and edit the env file:
+   ```bash
+   cd backend
+   cp .env.example .env
+   # Edit DATABASE_URL and REDIS_URL if your ports/passwords differ
+   ```
+
+4. Install and seed:
+   ```bash
+   cd backend && pip install -e ".[dev]" && python3 seed.py
+   cd ../frontend && npm install
+   ```
+
+### Other Commands
+
+```bash
+python3 setup.py --check    # Verify prerequisites only
+python3 setup.py --seed     # Re-seed database (resets all data)
+cd backend && python3 seed.py   # Same as --seed
+```
 
 ### Demo Accounts
 

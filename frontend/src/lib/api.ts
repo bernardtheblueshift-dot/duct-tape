@@ -28,19 +28,34 @@ class APIError extends Error {
   }
 }
 
+let isRefreshing = false;
+
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const response = await fetch(endpoint, {
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
       ...options.headers,
     },
     ...options,
   });
 
   if (!response.ok) {
+    if (response.status === 401 && !isRefreshing && !endpoint.includes('/auth/refresh') && !endpoint.includes('/auth/login')) {
+      isRefreshing = true;
+      try {
+        await fetch('/api/v1/auth/refresh', { method: 'POST', credentials: 'include' });
+        isRefreshing = false;
+        return request(endpoint, options);
+      } catch {
+        isRefreshing = false;
+        window.location.href = '/login';
+        throw new APIError(401, 'Session expired');
+      }
+    }
     const error = await response.json().catch(() => ({ detail: 'Unknown error' }));
-    throw new APIError(response.status, error.detail || 'Unknown error');
+    throw new APIError(response.status, error.detail || 'An error occurred');
   }
 
   if (response.status === 204) return undefined as T;
@@ -67,10 +82,10 @@ export const api = {
     list: (params?: { search?: string; state?: string; venue?: string; start_date?: string; end_date?: string }) => {
       const query = new URLSearchParams();
       if (params) Object.entries(params).forEach(([k, v]) => { if (v) query.set(k, v); });
-      return request<JobResponse[]>(`/api/v1/jobs?${query}`);
+      return request<JobResponse[]>(`/api/v1/jobs/?${query}`);
     },
     get: (id: string) => request<JobResponse>(`/api/v1/jobs/${id}`),
-    create: (data: JobCreate) => request<JobResponse>('/api/v1/jobs', { method: 'POST', body: JSON.stringify(data) }),
+    create: (data: JobCreate) => request<JobResponse>('/api/v1/jobs/', { method: 'POST', body: JSON.stringify(data) }),
     update: (id: string, data: JobUpdate) => request<JobResponse>(`/api/v1/jobs/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
     delete: (id: string) => request<void>(`/api/v1/jobs/${id}`, { method: 'DELETE' }),
     transition: (id: string, data: JobTransitionRequest) => request<JobResponse>(`/api/v1/jobs/${id}/transition`, { method: 'POST', body: JSON.stringify(data) }),
@@ -79,10 +94,10 @@ export const api = {
     list: (params?: { search?: string; skill?: string; available_start?: string; available_end?: string; role?: string }) => {
       const query = new URLSearchParams();
       if (params) Object.entries(params).forEach(([k, v]) => { if (v) query.set(k, v); });
-      return request<CrewProfileResponse[]>(`/api/v1/crew?${query}`);
+      return request<CrewProfileResponse[]>(`/api/v1/crew/?${query}`);
     },
     get: (id: string) => request<CrewProfileResponse>(`/api/v1/crew/${id}`),
-    create: (data: CrewProfileCreate) => request<CrewProfileResponse>('/api/v1/crew', { method: 'POST', body: JSON.stringify(data) }),
+    create: (data: CrewProfileCreate) => request<CrewProfileResponse>('/api/v1/crew/', { method: 'POST', body: JSON.stringify(data) }),
     update: (id: string, data: CrewProfileUpdate) => request<CrewProfileResponse>(`/api/v1/crew/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
     archive: (id: string) => request<CrewProfileResponse>(`/api/v1/crew/${id}/archive`, { method: 'POST' }),
     unarchive: (id: string) => request<CrewProfileResponse>(`/api/v1/crew/${id}/unarchive`, { method: 'POST' }),
@@ -96,17 +111,17 @@ export const api = {
     list: (params?: { search?: string; category?: string; condition?: string }) => {
       const query = new URLSearchParams();
       if (params) Object.entries(params).forEach(([k, v]) => { if (v) query.set(k, v); });
-      return request<EquipmentResponse[]>(`/api/v1/equipment?${query}`);
+      return request<EquipmentResponse[]>(`/api/v1/equipment/?${query}`);
     },
     get: (id: string) => request<EquipmentResponse>(`/api/v1/equipment/${id}`),
-    create: (data: EquipmentCreate) => request<EquipmentResponse>('/api/v1/equipment', { method: 'POST', body: JSON.stringify(data) }),
+    create: (data: EquipmentCreate) => request<EquipmentResponse>('/api/v1/equipment/', { method: 'POST', body: JSON.stringify(data) }),
     update: (id: string, data: EquipmentUpdate) => request<EquipmentResponse>(`/api/v1/equipment/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
     delete: (id: string) => request<void>(`/api/v1/equipment/${id}`, { method: 'DELETE' }),
     updateCondition: (id: string, condition: EquipmentCondition) => request<EquipmentResponse>(`/api/v1/equipment/${id}/condition`, { method: 'PATCH', body: JSON.stringify({ condition }) }),
   },
   assignments: {
-    createCrew: (data: CrewAssignmentCreate) => request<CrewAssignmentResponse>('/api/v1/assignments/crew', { method: 'POST', body: JSON.stringify(data) }),
-    createEquipment: (data: EquipmentAssignmentCreate) => request<EquipmentAssignmentResponse>('/api/v1/assignments/equipment', { method: 'POST', body: JSON.stringify(data) }),
+    createCrew: (data: CrewAssignmentCreate) => request<CrewAssignmentResponse>('/api/v1/assignments/crew/', { method: 'POST', body: JSON.stringify(data) }),
+    createEquipment: (data: EquipmentAssignmentCreate) => request<EquipmentAssignmentResponse>('/api/v1/assignments/equipment/', { method: 'POST', body: JSON.stringify(data) }),
     transitionCrew: (id: string, new_status: string, declined_reason?: string) => request<CrewAssignmentResponse>(`/api/v1/assignments/crew/${id}/transition`, { method: 'POST', body: JSON.stringify({ new_status, declined_reason }) }),
     getJobCrew: (jobId: string) => request<CrewAssignmentResponse[]>(`/api/v1/assignments/job/${jobId}/crew`),
     getJobEquipment: (jobId: string) => request<EquipmentAssignmentResponse[]>(`/api/v1/assignments/job/${jobId}/equipment`),
@@ -131,7 +146,7 @@ export const api = {
       return request<AvailabilityDay[]>(`/api/v1/calendar/crew/${crewId}/availability?${query}`);
     },
     bulkAvailability: (params: { start_date: string; end_date: string }) => {
-      const query = new URLSearchParams(params);
+      const query = new URLSearchParams({ start: params.start_date, end: params.end_date });
       return request<CrewAvailabilitySummary[]>(`/api/v1/calendar/availability?${query}`);
     },
   },
@@ -139,29 +154,29 @@ export const api = {
     list: (jobId: string, params?: { search?: string }) => {
       const query = new URLSearchParams();
       if (params?.search) query.set('search', params.search);
-      return request<MessageResponse[]>(`/api/v1/jobs/${jobId}/messages?${query}`);
+      return request<MessageResponse[]>(`/api/v1/jobs/${jobId}/messages/?${query}`);
     },
     get: (jobId: string, messageId: string) => request<MessageResponse>(`/api/v1/jobs/${jobId}/messages/${messageId}`),
-    create: (jobId: string, data: MessageCreate) => request<MessageResponse>(`/api/v1/jobs/${jobId}/messages`, { method: 'POST', body: JSON.stringify(data) }),
+    create: (jobId: string, data: MessageCreate) => request<MessageResponse>(`/api/v1/jobs/${jobId}/messages/`, { method: 'POST', body: JSON.stringify(data) }),
   },
   tasks: {
     list: (jobId: string, params?: { status?: string; assignee_id?: string; priority?: string }) => {
       const query = new URLSearchParams();
       if (params) Object.entries(params).forEach(([k, v]) => { if (v) query.set(k, v); });
-      return request<TaskResponse[]>(`/api/v1/jobs/${jobId}/tasks?${query}`);
+      return request<TaskResponse[]>(`/api/v1/jobs/${jobId}/tasks/?${query}`);
     },
     get: (jobId: string, taskId: string) => request<TaskResponse>(`/api/v1/jobs/${jobId}/tasks/${taskId}`),
-    create: (jobId: string, data: TaskCreate) => request<TaskResponse>(`/api/v1/jobs/${jobId}/tasks`, { method: 'POST', body: JSON.stringify(data) }),
+    create: (jobId: string, data: TaskCreate) => request<TaskResponse>(`/api/v1/jobs/${jobId}/tasks/`, { method: 'POST', body: JSON.stringify(data) }),
     update: (jobId: string, taskId: string, data: TaskUpdate) => request<TaskResponse>(`/api/v1/jobs/${jobId}/tasks/${taskId}`, { method: 'PATCH', body: JSON.stringify(data) }),
     updateStatus: (jobId: string, taskId: string, status: TaskStatus) => request<TaskResponse>(`/api/v1/jobs/${jobId}/tasks/${taskId}/status`, { method: 'POST', body: JSON.stringify({ status }) }),
     delete: (jobId: string, taskId: string) => request<void>(`/api/v1/jobs/${jobId}/tasks/${taskId}`, { method: 'DELETE' }),
   },
   files: {
-    list: (jobId: string) => request<FileResponse[]>(`/api/v1/jobs/${jobId}/files`),
+    list: (jobId: string) => request<FileResponse[]>(`/api/v1/jobs/${jobId}/files/`),
     upload: async (jobId: string, file: File): Promise<FileResponse> => {
       const formData = new FormData();
       formData.append('file', file);
-      const response = await fetch(`/api/v1/jobs/${jobId}/files`, {
+      const response = await fetch(`/api/v1/jobs/${jobId}/files/`, {
         method: 'POST',
         credentials: 'include',
         body: formData,

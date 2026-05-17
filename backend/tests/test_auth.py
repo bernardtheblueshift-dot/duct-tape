@@ -1,7 +1,7 @@
 import pytest
 import pytest_asyncio
 from sqlalchemy import select
-from app.models import User, Tenant, VerificationToken, PasswordResetToken, UserRole
+from app.models import User, Tenant, VerificationToken, PasswordResetToken, UserRole, RefreshToken
 from app.core.security import hash_password
 
 
@@ -162,20 +162,21 @@ async def test_login_unverified_email_fails(async_client, test_db, test_tenant):
 
 @pytest.mark.asyncio
 async def test_refresh_with_valid_token_returns_new_access_token(
-    async_client, test_admin_user
+    async_client, test_admin_user, test_db
 ):
     """POST /auth/refresh with valid refresh token returns new access token"""
-    from app.core.security import create_refresh_token
-
-    # Create refresh token
-    refresh_token = create_refresh_token(str(test_admin_user.id))
+    # Create server-side refresh token
+    refresh_obj, raw_token = RefreshToken.create_for_user(test_admin_user.id)
+    test_db.add(refresh_obj)
+    await test_db.flush()
 
     # Refresh access token
     response = await async_client.post(
-        "/api/v1/auth/refresh", cookies={"refresh_token": refresh_token}
+        "/api/v1/auth/refresh", cookies={"refresh_token": raw_token}
     )
     assert response.status_code == 200
     assert "access_token" in response.cookies
+    assert "refresh_token" in response.cookies
 
 
 @pytest.mark.asyncio

@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import Response
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, text
 from datetime import datetime, timezone
 from uuid import UUID
 
@@ -60,6 +60,9 @@ async def ical_feed(
 
     # Update last accessed timestamp
     ical_token.last_accessed = datetime.now(timezone.utc)
+
+    # Set tenant context for RLS
+    await db.execute(text(f"SET LOCAL app.current_tenant_id = '{ical_token.tenant_id}'"))
 
     # Fetch confirmed assignments for this crew
     assignments_result = await db.execute(

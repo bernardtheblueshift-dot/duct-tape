@@ -41,7 +41,7 @@ export function DataTable<T extends { id: string }>({
         <table className="w-full">
           <thead>
             <tr className="border-b border-border">
-              {columns.filter(c => !c.hideOnMobile).map(col => (
+              {columns.map(col => (
                 <th key={col.key} className={cn("text-left text-xs text-muted font-medium uppercase tracking-wider py-3 px-4", col.className)}>
                   {col.header}
                 </th>
@@ -58,7 +58,7 @@ export function DataTable<T extends { id: string }>({
                   onRowClick && "cursor-pointer"
                 )}
               >
-                {columns.filter(c => !c.hideOnMobile).map(col => (
+                {columns.map(col => (
                   <td key={col.key} className={cn("py-3 px-4 text-sm", col.className)}>
                     {col.render(item)}
                   </td>

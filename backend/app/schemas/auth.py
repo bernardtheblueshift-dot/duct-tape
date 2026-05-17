@@ -1,10 +1,12 @@
+import re
+
 from pydantic import BaseModel, EmailStr, Field
 
 
 class RegisterRequest(BaseModel):
     email: EmailStr
-    password: str = Field(min_length=8)
-    company_name: str = Field(min_length=1)
+    password: str = Field(min_length=8, max_length=128)
+    company_name: str = Field(min_length=1, max_length=200)
 
 
 class LoginRequest(BaseModel):
@@ -22,7 +24,7 @@ class PasswordResetRequest(BaseModel):
 
 class PasswordResetConfirm(BaseModel):
     token: str
-    new_password: str = Field(min_length=8)
+    new_password: str = Field(min_length=8, max_length=128)
 
 
 class TokenResponse(BaseModel):
@@ -42,4 +44,4 @@ class InviteRequest(BaseModel):
 
 class AcceptInvitationRequest(BaseModel):
     token: str
-    password: str = Field(min_length=8)
+    password: str = Field(min_length=8, max_length=128)

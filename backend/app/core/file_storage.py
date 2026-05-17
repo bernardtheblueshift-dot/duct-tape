@@ -71,36 +71,36 @@ async def save_upload(
     Raises:
         ValueError: If file too large or MIME type not allowed
     """
-    # Read file content
-    content = await file.read()
-    file_size = len(content)
+    # Read file in chunks to avoid loading entire file into memory at once
+    chunks = []
+    total_size = 0
+    while True:
+        chunk = await file.read(65536)
+        if not chunk:
+            break
+        total_size += len(chunk)
+        if total_size > max_size:
+            raise ValueError(f"File too large: exceeds {max_size} bytes")
+        chunks.append(chunk)
 
-    # Check file size
-    if file_size > max_size:
-        raise ValueError(f"File too large: {file_size} bytes (max {max_size})")
+    content = b"".join(chunks)
+    file_size = total_size
 
-    # Detect MIME type (python-magic if available, otherwise trust upload header)
-    if HAS_MAGIC:
-        mime_type = magic.from_buffer(content, mime=True)
-    else:
-        mime_type = file.content_type or "application/octet-stream"
+    # Detect MIME type — require python-magic, no client-trust fallback
+    if not HAS_MAGIC:
+        raise ValueError("Server misconfiguration: python-magic is required for file uploads")
+    mime_type = magic.from_buffer(content, mime=True)
 
-    # Validate MIME type
     if mime_type not in ALLOWED_MIME_TYPES:
         raise ValueError(f"MIME type not allowed: {mime_type}")
 
-    # Generate UUID filename preserving original extension
     file_id = str(uuid.uuid4())
     original_filename = file.filename or "unnamed"
-    extension = Path(original_filename).suffix  # e.g., ".pdf"
+    extension = Path(original_filename).suffix
 
-    # Build storage path
     storage_path = get_upload_path(tenant_id, job_id, file_id, extension)
-
-    # Create directory if needed
     storage_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # Write file asynchronously
     async with aiofiles.open(storage_path, "wb") as f:
         await f.write(content)
 
