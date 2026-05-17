@@ -60,7 +60,7 @@ async def register(request: RegisterRequest, db: AsyncSession = Depends(get_db))
         hashed_password=hash_password(request.password),
         tenant_id=tenant.id,
         role=UserRole.ADMIN,
-        is_active=False,  # Will be activated after email verification
+        is_active=settings.DEBUG,  # Auto-activate in dev mode, require email verification in prod
     )
     db.add(user)
     await db.flush()  # Get user.id

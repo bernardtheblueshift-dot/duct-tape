@@ -525,10 +525,10 @@ async def delete_job(
                     email=crew_user.email,
                     job_title=job.title,
                     job_id=str(job.id),
+                    event_type="cancelled",
+                )
             except Exception:
                 pass
-                event_type="cancelled",
-            )
 
     await db.delete(job)
     await db.commit()
@@ -604,12 +604,12 @@ async def transition_job_state(
                     email=crew_user.email,
                     job_title=job.title,
                     job_id=str(job.id),
+                    event_type="state_change",
+                    old_state=old_state.value,
+                    new_state=transition.new_state.value,
+                )
             except Exception:
                 pass
-                event_type="state_change",
-                old_state=old_state.value,
-                new_state=transition.new_state.value,
-            )
 
     # Query crew assignments
     crew_result = await db.execute(

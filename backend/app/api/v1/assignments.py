@@ -166,13 +166,13 @@ async def assign_crew_to_job(
                 email=crew_user.email,
                 job_title=job.title,
                 job_id=str(job.id),
+                role=assignment.role,
+                venue=job.venue,
+                scheduled_start=str(job.scheduled_start) if job.scheduled_start else None,
+                scheduled_end=str(job.scheduled_end) if job.scheduled_end else None,
+            )
         except Exception:
             pass
-            role=assignment.role,
-            venue=job.venue,
-            scheduled_start=str(job.scheduled_start) if job.scheduled_start else None,
-            scheduled_end=str(job.scheduled_end) if job.scheduled_end else None,
-        )
 
     return assignment
 
