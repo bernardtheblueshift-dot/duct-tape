@@ -207,7 +207,7 @@ Plans:
   2. Mobile-responsive design works on phones without native app
   3. Admin dashboard shows at-a-glance view of upcoming jobs and resource status
 
-**Plans**: 7 plans in 4 waves
+**Plans**: 9 plans in 5 waves
 
 Plans:
 - [x] 08-01-PLAN.md — Bootstrap Vite + React + TypeScript + Tailwind + shadcn/ui, API client, types, backend /me endpoint (Wave 1) ✓
@@ -215,7 +215,9 @@ Plans:
 - [x] 08-03-PLAN.md — Admin dashboard with bento grid, stat cards, upcoming jobs, crew availability (Wave 2) ✓
 - [x] 08-04-PLAN.md — Jobs list page with search/filter + job detail with tabs and CRUD (Wave 3) ✓
 - [x] 08-05-PLAN.md — Crew directory + detail page + equipment inventory with CRUD (Wave 3) ✓
-- [ ] 08-06-PLAN.md — Calendar month view with colored events and navigation (Wave 3)
-- [ ] 08-07-PLAN.md — Crew portal (assignments, profile, availability) + visual checkpoint (Wave 4)
+- [x] 08-06-PLAN.md — Calendar month view with colored events and navigation (Wave 3) ✓
+- [x] 08-07-PLAN.md — Crew portal (assignments, profile, availability) + visual checkpoint (Wave 4) ✓
+- [ ] 08-08-PLAN.md — Gap closure: Calendar week view with hourly timeline (Wave 5)
+- [ ] 08-09-PLAN.md — Gap closure: Job detail assignment modals + file preview (Wave 5)
 
 ---
