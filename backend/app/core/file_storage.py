@@ -3,8 +3,13 @@
 from pathlib import Path
 import aiofiles
 import uuid
-import magic
 from fastapi import UploadFile
+
+try:
+    import magic
+    HAS_MAGIC = True
+except ImportError:
+    HAS_MAGIC = False
 
 # Configuration
 UPLOAD_DIR = Path("uploads")
@@ -74,8 +79,11 @@ async def save_upload(
     if file_size > max_size:
         raise ValueError(f"File too large: {file_size} bytes (max {max_size})")
 
-    # Detect MIME type using python-magic
-    mime_type = magic.from_buffer(content, mime=True)
+    # Detect MIME type (python-magic if available, otherwise trust upload header)
+    if HAS_MAGIC:
+        mime_type = magic.from_buffer(content, mime=True)
+    else:
+        mime_type = file.content_type or "application/octet-stream"
 
     # Validate MIME type
     if mime_type not in ALLOWED_MIME_TYPES:
