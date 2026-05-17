@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 08-04-PLAN.md
-last_updated: "2026-05-17T05:14:37.888Z"
+stopped_at: Completed 08-06-PLAN.md
+last_updated: "2026-05-17T05:25:16Z"
 progress:
   total_phases: 8
   completed_phases: 7
   total_plans: 30
-  completed_plans: 28
+  completed_plans: 29
 ---
 
 # Project State: GT
@@ -26,16 +26,16 @@ progress:
 ## Current Position
 
 Phase: 08 (ui-polish) — EXECUTING
-Current Plan: 6
+Current Plan: 7
 Total Plans: 7
 
 ### Phase Context
 
 Goal: UI Polish - dark theme, mobile-responsive design
 
-Status: Phase 08 Plan 05 complete - crew directory with skills pills and ratings, crew detail with availability grid, equipment inventory with condition badges and inline CRUD
+Status: Phase 08 Plan 06 complete - calendar view with month grid, job state colored events, responsive mobile dots, month navigation
 
-Next action: Execute Plan 08-06 (Calendar view)
+Next action: Execute Plan 08-07 (final polish)
 
 ## Performance Metrics
 
@@ -78,6 +78,7 @@ Next action: Execute Plan 08-06 (Calendar view)
 | Phase 08 P03 | 140 | 2 tasks | 7 files |
 | Phase 08 P04 | 225 | 2 tasks | 7 files |
 | Phase 08 P05 | 221 | 2 tasks | 5 files |
+| Phase 08 P06 | 99 | 1 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -171,6 +172,7 @@ Next action: Execute Plan 08-06 (Calendar view)
 | Truncated user_id display for crew names | Phase 8 P05 | 2026-05-17 | V1 has no User name lookup; showing "Crew {short_id}" provides unique identifier without full UUID clutter |
 | Inline condition dropdown in equipment table | Phase 8 P05 | 2026-05-17 | Quick status updates without modal/form overhead; badge itself is styled <select> for instant condition changes |
 | Skills pills with "+N more" truncation | Phase 8 P05 | 2026-05-17 | Max 3 visible skills prevents table row expansion; full list in detail view maintains scannable tables |
+| Custom CSS Grid calendar instead of library | Phase 8 P06 | 2026-05-17 | date-fns + custom grid simpler than FullCalendar/react-big-calendar for v1 month view; faster to ship, no heavy dependencies |
 
 ### Open Questions
 
@@ -196,28 +198,30 @@ Next action: Execute Plan 08-06 (Calendar view)
 
 ## Session Continuity
 
-**Last session:** 2026-05-17T05:19:57.000Z
-**Stopped at:** Completed 08-05-PLAN.md
+**Last session:** 2026-05-17T05:25:16Z
+**Stopped at:** Completed 08-06-PLAN.md
 
 **What changed this session:**
 
-- Executed Plan 08-05: Crew and Equipment Pages
-- Created crew hooks (useCrewList, useCrew, useCrewRatings, useCrewAvailability, mutations)
-- Built Crew page with DataTable, search, skill filter, archive toggle, skills pills (max 3 + "N more")
-- Built CrewDetail page with profile card, ratings history, 7-day availability grid
-- Created equipment hooks (useEquipmentList, useEquipment, CRUD mutations, condition update)
-- Built Equipment page with inline create form, search/filters, condition badge dropdowns, edit/delete actions
-- Wired all pages into router replacing stub pages
-- Fixed TypeScript errors (unused imports, null type guard for categories)
-- Made 2 atomic commits (Task 1: crew pages, Task 2: equipment page)
-- Build passes in 450ms
+- Executed Plan 08-06: Calendar View
+- Created useCalendar hook with date range calculation (startOfMonth/endOfMonth)
+- Built custom CSS Grid calendar page (7-column layout, no external library)
+- Implemented month navigation with Previous/Next buttons
+- Added today highlighting with accent border
+- Event blocks display with job state colors from backend
+- Responsive: colored dots on mobile, full event text on desktop
+- Event click navigates to job detail
+- Week view stubbed for v2
+- Fixed TypeScript errors (unused StubPage, unused isSameDay import)
+- Made 1 atomic commit
+- Build passes in 358ms
 
 **Context for next session:**
 
-- Phase 08 Plan 05 COMPLETE - crew and equipment resource management ready
-- Plan 08-06 next: Calendar view with job/crew/equipment events
-- Resource management UI complete: Jobs (08-04), Crew (08-05), Equipment (08-05)
-- 28/30 plans executed (93% complete)
+- Phase 08 Plan 06 COMPLETE - calendar view with month grid ready
+- Plan 08-07 next: Final polish (last plan in Phase 08)
+- UI complete: Dashboard (08-03), Jobs (08-04), Crew (08-05), Equipment (08-05), Calendar (08-06)
+- 29/30 plans executed (97% complete)
 
 ---
 
