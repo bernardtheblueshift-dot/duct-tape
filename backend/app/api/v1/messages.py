@@ -9,9 +9,10 @@ from uuid import UUID
 from app.database import get_db
 from app.dependencies import get_current_tenant, get_current_user
 from app.core.permissions import require_active
-from app.models import Message, Job, JobFile, User
+from app.models import Message, Job, JobFile, User, MessageLastSeen
 from app.schemas.message import MessageCreate, MessageResponse
 from app.core.websocket_manager import manager
+from datetime import datetime, timezone
 
 router = APIRouter(prefix="/api/v1/jobs/{job_id}/messages", tags=["messages"])
 
@@ -103,6 +104,7 @@ async def create_message(
 async def list_messages(
     job_id: UUID,
     search: str | None = None,
+    current_user: User = Depends(require_active),
     tenant_id: str = Depends(get_current_tenant),
     db: AsyncSession = Depends(get_db),
 ):
@@ -111,6 +113,7 @@ async def list_messages(
 
     Both admin and crew can read messages.
     Results ordered oldest first (chat-style).
+    Updates last-seen timestamp for this user+job.
     """
     query = select(Message).where(Message.job_id == job_id)
 
@@ -123,6 +126,29 @@ async def list_messages(
 
     result = await db.execute(query)
     messages = result.scalars().all()
+
+    # Update last-seen timestamp for this user+job
+    existing_last_seen = await db.execute(
+        select(MessageLastSeen).where(
+            MessageLastSeen.user_id == current_user.id,
+            MessageLastSeen.job_id == job_id,
+        )
+    )
+    last_seen = existing_last_seen.scalar_one_or_none()
+
+    now = datetime.now(timezone.utc)
+    if last_seen:
+        last_seen.last_seen_at = now
+    else:
+        last_seen = MessageLastSeen(
+            user_id=current_user.id,
+            job_id=job_id,
+            last_seen_at=now,
+            tenant_id=tenant_id,
+        )
+        db.add(last_seen)
+    await db.commit()
+
     return messages
 
 
