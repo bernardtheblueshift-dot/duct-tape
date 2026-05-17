@@ -22,6 +22,8 @@ When a job ignites, a production manager can instantly see who's available, what
 - [x] Threaded messaging tied to jobs with real-time WebSocket delivery — Validated in Phase 5: Coordination Layer
 - [x] Task assignment with deadlines, priority levels, and status workflow — Validated in Phase 5: Coordination Layer
 - [x] File sharing with tenant-isolated local storage and MIME validation — Validated in Phase 5: Coordination Layer
+- [x] Email notifications for crew assignment and job state changes — Validated in Phase 6: Notifications
+- [x] In-app notification badge counts (unread messages + pending assignments) — Validated in Phase 6: Notifications
 
 ### Active
 
@@ -68,4 +70,4 @@ When a job ignites, a production manager can instantly see who's available, what
 | Cloud-deployed | Multiple users need remote access | — Pending |
 
 ---
-*Last updated: 2026-05-16 after Phase 5 completion*
+*Last updated: 2026-05-17 after Phase 6 completion*

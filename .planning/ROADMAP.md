@@ -12,7 +12,7 @@
 - [x] **Phase 3: Resource Management** - Crew and equipment with conflict detection (completed 2026-05-16)
 - [x] **Phase 4: Calendar & Scheduling** - Visual calendar with availability views (completed 2026-05-16)
 - [x] **Phase 5: Coordination Layer (Messaging + Tasks + Files)** - Job-scoped collaboration tools (completed 2026-05-16)
-- [ ] **Phase 6: Notifications** - Email alerts for assignments and updates
+- [x] **Phase 6: Notifications** - Email alerts for assignments and updates (completed 2026-05-17)
 - [ ] **Phase 7: Crew Portal** - Crew-facing views and booking confirmations
 - [ ] **Phase 8: UI Polish** - Dark theme, mobile-responsive design
 
@@ -170,6 +170,6 @@ Plans:
 
 Plans:
 - [x] 06-01-PLAN.md — Email notification Celery tasks + wiring into assignment and job endpoints (Wave 1) ✓
-- [ ] 06-02-PLAN.md — MessageLastSeen model + notification counts endpoint + last-seen tracking (Wave 1)
+- [x] 06-02-PLAN.md — MessageLastSeen model + notification counts endpoint + last-seen tracking (Wave 1) ✓
 
 ---
