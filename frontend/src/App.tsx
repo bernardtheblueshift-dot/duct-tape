@@ -5,6 +5,7 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { LoginPage } from '@/pages/Login';
 import { RegisterPage } from '@/pages/Register';
+import { DashboardPage } from '@/pages/Dashboard';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -41,7 +42,7 @@ export default function App() {
                 <AppLayout />
               </ProtectedRoute>
             }>
-              <Route index element={<StubPage title="Dashboard" />} />
+              <Route index element={<DashboardPage />} />
               <Route path="jobs" element={<StubPage title="Jobs" />} />
               <Route path="jobs/:jobId" element={<StubPage title="Job Detail" />} />
               <Route path="crew" element={<StubPage title="Crew" />} />

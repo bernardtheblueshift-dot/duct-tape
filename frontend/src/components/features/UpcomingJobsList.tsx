@@ -30,7 +30,7 @@ export function UpcomingJobsList({ jobs }: UpcomingJobsListProps) {
 
   return (
     <div className="space-y-0">
-      {upcomingJobs.map((job, index) => (
+      {upcomingJobs.map((job) => (
         <Link
           key={job.id}
           to={`/jobs/${job.id}`}
