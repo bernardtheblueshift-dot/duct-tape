@@ -173,3 +173,24 @@ Plans:
 - [x] 06-02-PLAN.md — MessageLastSeen model + notification counts endpoint + last-seen tracking (Wave 1) ✓
 
 ---
+
+### Phase 7: Crew Portal
+**Goal**: Crew-facing views — a dashboard showing upcoming assignments, job detail access with briefs, assignment confirmation/decline from the portal, and self-service profile and availability management
+
+**Depends on**: Phase 1, Phase 2, Phase 3, Phase 5
+
+**Requirements**: PORT-01, PORT-02, PORT-03, PORT-04
+
+**Success Criteria** (what must be TRUE):
+  1. Crew member dashboard shows upcoming assignments sorted by date
+  2. Crew can view job details and briefs for their assignments
+  3. Crew can confirm or decline assignments from their portal
+  4. Crew can update their own profile and availability
+
+**Plans**: 2 plans in 2 waves
+
+Plans:
+- [ ] 07-01-PLAN.md — Portal schemas + dashboard + job detail endpoints (Wave 1)
+- [ ] 07-02-PLAN.md — Assignment confirm/decline + profile/availability self-service + router registration (Wave 2)
+
+---
