@@ -1,6 +1,11 @@
 import pytest
 import pytest_asyncio
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
+import sys
+
+# Mock magic module before any app imports
+sys.modules['magic'] = MagicMock()
+
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
