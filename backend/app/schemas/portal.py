@@ -1,6 +1,6 @@
 """Pydantic schemas for crew portal API"""
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from datetime import datetime
 from uuid import UUID
 from app.schemas.notification import NotificationCounts
@@ -56,5 +56,34 @@ class PortalJobDetailResponse(BaseModel):
     crew_role: str | None  # This crew member's role on the job
     assignment_status: str  # This crew member's assignment status
     files: list[PortalFileItem]  # Briefs and documents
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class PortalProfileUpdate(BaseModel):
+    """Crew self-service profile update - restricted fields only"""
+
+    phone: str | None = None
+    bio: str | None = None
+
+
+class PortalDeclineRequest(BaseModel):
+    """Optional reason when declining assignment"""
+
+    declined_reason: str | None = None
+
+
+class PortalAssignmentDetail(BaseModel):
+    """Assignment with job context for portal list"""
+
+    id: UUID
+    job_id: UUID
+    job_title: str
+    job_venue: str | None
+    scheduled_start: datetime | None
+    scheduled_end: datetime | None
+    role: str | None
+    status: str
+    created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)

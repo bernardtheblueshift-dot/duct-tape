@@ -58,7 +58,7 @@ async def test_confirm_already_confirmed_fails(async_client, crew_token, test_cr
 
 
 @pytest.mark.asyncio
-async def test_confirm_another_crews_assignment_forbidden(async_client, crew_token, test_job, test_db, test_tenant):
+async def test_confirm_another_crews_assignment_forbidden(async_client, crew_token, test_crew_profile, test_job, test_db, test_tenant):
     """Crew member cannot confirm another crew member's assignment"""
     from app.models import CrewProfile, User, CrewAssignment, AssignmentState, UserRole
     from app.core.security import hash_password
