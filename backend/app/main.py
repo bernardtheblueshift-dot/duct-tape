@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
-from app.api.v1 import auth, invitations, jobs, crew, equipment, assignments, calendar, ical, messages, websocket, tasks, files
+from app.api.v1 import auth, invitations, jobs, crew, equipment, assignments, calendar, ical, messages, websocket, tasks, files, notifications
 
 # Create FastAPI application
 app = FastAPI(
@@ -34,6 +34,7 @@ app.include_router(websocket.router)
 app.include_router(tasks.router)
 app.include_router(files.job_files_router)  # Job-scoped file operations
 app.include_router(files.files_router)  # File-scoped operations
+app.include_router(notifications.router)
 
 
 @app.get("/health")

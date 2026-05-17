@@ -15,6 +15,7 @@ from app.models.availability import AvailabilityPattern
 from app.models.rating import CrewRating
 from app.models.ical_token import ICalToken
 from app.models.message import Message
+from app.models.message_last_seen import MessageLastSeen
 from app.models.task import Task, TaskStatus, TaskPriority
 from app.models.file import JobFile
 from app.models.message_file import message_files
@@ -42,6 +43,7 @@ __all__ = [
     "CrewRating",
     "ICalToken",
     "Message",
+    "MessageLastSeen",
     "Task",
     "TaskStatus",
     "TaskPriority",
