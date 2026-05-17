@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
-stopped_at: Phase 8 context gathered
-last_updated: "2026-05-17T04:17:13.211Z"
+status: in_progress
+stopped_at: "Completed 08-01-PLAN.md"
+last_updated: "2026-05-17T04:55:13Z"
 progress:
   total_phases: 8
   completed_phases: 7
-  total_plans: 23
-  completed_plans: 23
+  total_plans: 30
+  completed_plans: 24
 ---
 
 # Project State: GT
@@ -25,16 +25,16 @@ progress:
 
 ## Current Position
 
-Phase: 07 (crew-portal) — COMPLETE
-Plan: 2 of 2 (ALL PLANS COMPLETE)
+Phase: 08 (ui-polish) — EXECUTING
+Plan: 2 of 7
 
 ### Phase Context
 
-Goal: Crew portal for dashboard and assignment actions
+Goal: UI Polish - dark theme, mobile-responsive design
 
-Status: Phase 07 complete - crew can view dashboard, access job details, confirm/decline assignments, manage profile (phone/bio), and set availability patterns
+Status: Phase 08 Plan 01 complete - frontend foundation bootstrapped (Vite + React + TypeScript + Tailwind CSS v4 dark theme, type-safe API client, backend /me endpoint)
 
-Next action: All v1 phases complete! Ready for production deployment or Phase 08 (Polish)
+Next action: Execute Plan 08-02 (Login/Register UI)
 
 ## Performance Metrics
 
@@ -72,6 +72,7 @@ Next action: All v1 phases complete! Ready for production deployment or Phase 08
 | Phase 06-notifications P02 | 3min | 2 tasks | 8 files |
 | Phase 07 P01 | 198 | 1 tasks | 4 files |
 | Phase 07 P02 | 276 | 2 tasks | 3 files |
+| Phase 08 P01 | 468 | 2 tasks | 15 files |
 
 ## Accumulated Context
 
@@ -145,6 +146,12 @@ Next action: All v1 phases complete! Ready for production deployment or Phase 08
 | Field-restricted profile update schema | Phase 7 P02 | 2026-05-17 | PortalProfileUpdate only exposes phone/bio; skills/hourly_rate admin-only to preserve data integrity |
 | State machine validation for assignment actions | Phase 7 P02 | 2026-05-17 | ASSIGNMENT_TRANSITIONS enforces valid transitions; prevents confirming already-declined assignments |
 | Ownership checks on portal action endpoints | Phase 7 P02 | 2026-05-17 | Crew can only act on own assignments/profile/availability; prevents unauthorized actions |
+| Tailwind CSS v4 with @tailwindcss/vite plugin | Phase 8 P01 | 2026-05-17 | Latest version with performance improvements and simplified configuration |
+| credentials include for all API requests | Phase 8 P01 | 2026-05-17 | httpOnly cookies cannot be read by JS, must be sent automatically |
+| Inline type imports (type Foo) instead of import type | Phase 8 P01 | 2026-05-17 | erasableSyntaxOnly flag requires inline type syntax |
+| Dark theme as default with #0a0a0a background | Phase 8 P01 | 2026-05-17 | Production event management typically happens in dark environments |
+| Backend /me endpoint reads from Cookie header | Phase 8 P01 | 2026-05-17 | Frontend needs auth check on page load, httpOnly cookies require server-side reading |
+| Separate /ws-token endpoint for WebSocket auth | Phase 8 P01 | 2026-05-17 | WebSocket connections cannot send httpOnly cookies, need token in query param |
 
 ### Open Questions
 
@@ -170,28 +177,27 @@ Next action: All v1 phases complete! Ready for production deployment or Phase 08
 
 ## Session Continuity
 
-**Last session:** 2026-05-17T04:17:13.203Z
-**Stopped at:** Phase 8 context gathered
+**Last session:** 2026-05-17T04:55:13Z
+**Stopped at:** Completed 08-01-PLAN.md
 
 **What changed this session:**
 
-- Executed Plan 07-02: Crew Portal Actions
-- Added 8 new portal endpoints: assignments list, confirm, decline, profile GET/PATCH, availability PUT/GET
-- Crew can confirm/decline own assignments with ASSIGNMENT_TRANSITIONS state validation
-- Crew can view/update own profile (phone/bio only; skills/hourly_rate admin-only)
-- Crew can manage own availability patterns (upsert: delete all + insert)
-- All endpoints enforce ownership (403 for acting on another crew's data)
-- TDD flow: RED (tests) → GREEN (implementation)
-- Made 2 atomic commits (1 RED, 1 GREEN)
-- 2 auto-fixes: libmagic mock in conftest, test fixture addition
-- Portal router already registered from 07-01
+- Executed Plan 08-01: Frontend Foundation
+- Bootstrapped Vite + React + TypeScript + Tailwind CSS v4 project from scratch
+- Configured dark theme (#0a0a0a background, custom CSS variables for job states)
+- Created comprehensive TypeScript types for ALL backend Pydantic schemas (frontend/src/types/api.ts)
+- Created type-safe API client with credentials: include (frontend/src/lib/api.ts)
+- Added backend /me and /ws-token endpoints to auth router
+- Made 2 atomic commits (Task 1: Vite setup, Task 2: types + API client + backend endpoints)
+- Build and type-check both pass
+- Zero deviations from plan
 
 **Context for next session:**
 
-- Phase 07 COMPLETE - all crew portal functionality shipped
-- All 7 v1 phases complete (23/23 plans executed)
-- 43/43 requirements implemented
-- System ready for production deployment or polish phase
+- Phase 08 Plan 01 COMPLETE - frontend foundation ready
+- Plan 08-02 can now build Login/Register UI using api.auth methods
+- All future frontend plans depend on this foundation
+- 24/30 plans executed (80% complete)
 
 ---
 
