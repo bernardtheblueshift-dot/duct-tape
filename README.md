@@ -4,6 +4,94 @@ Crew and resource management for event production companies.
 
 When a job ignites, see who's available, what gear is free, and assign resources from one place — replacing spreadsheets, memory, and scattered messages.
 
+## Demo
+
+Seed the database with realistic event production data and start exploring immediately.
+
+### Prerequisites
+
+- Python 3.12+
+- Node.js 20+
+- PostgreSQL 16
+- Redis
+
+### Setup (5 minutes)
+
+```bash
+# 1. Database
+psql -c "CREATE USER duct_tape_dev WITH PASSWORD 'duct_tape_dev';"
+psql -c "CREATE DATABASE duct_tape OWNER duct_tape_dev;"
+
+# 2. Backend
+cd backend
+cp .env.example .env
+pip install -e ".[dev]"
+python3 seed.py          # Creates tables + demo data
+
+# 3. Frontend (new terminal)
+cd frontend
+npm install
+```
+
+### Run
+
+```bash
+# Terminal 1 — Backend
+cd backend && uvicorn app.main:app --reload
+
+# Terminal 2 — Frontend
+cd frontend && npm run dev
+```
+
+Open http://localhost:5173
+
+### Demo Accounts
+
+| Role | Email | Password | What you see |
+|------|-------|----------|-------------|
+| Admin | `admin@gt.dev` | `admin123` | Dashboard, all jobs, crew, equipment, calendar |
+| Crew | `kenji@gt.dev` | `crew123` | Crew portal, assigned jobs only |
+| Crew | `yuki@gt.dev` | `crew123` | Different assignments |
+| Crew | `mari@gt.dev` | `crew123` | Has availability restrictions |
+
+All crew passwords are `crew123`. Available: kenji, yuki, mari, takeshi, aya, ryo, hana.
+
+### Demo Data
+
+| What | Count | Details |
+|------|-------|---------|
+| Tenant | 1 | Blue Shift Productions |
+| Jobs | 8 | 2 active, 2 simmering, 2 intake, 2 complete |
+| Crew | 7 | Skills, rates, ratings, availability patterns |
+| Equipment | 12 | Cameras, audio, lighting, video, rigging |
+| Crew assignments | 18 | Mix of confirmed, pending, declined |
+| Equipment assignments | 9 | Across active jobs |
+| Messages | 10 | Threaded conversations on active jobs |
+| Tasks | 9 | Various statuses and priorities |
+
+### Things to Try
+
+**As Admin (`admin@gt.dev`):**
+- Dashboard shows upcoming jobs with state colors, crew availability, stat cards
+- Click a job to see crew, equipment, messages, tasks, files tabs
+- Create a new job, assign crew, transition states
+- Browse crew directory — click a crew member for ratings and availability
+- Check the calendar for month/week views
+- Add equipment, change condition status
+
+**As Crew (`kenji@gt.dev`):**
+- Portal shows your upcoming assignments
+- Confirm or decline pending assignments
+- View job details and briefs for your gigs
+- Update your phone, bio, and weekly availability
+
+**Reseed anytime:**
+```bash
+cd backend && python3 seed.py
+```
+
+---
+
 ## Features
 
 - **Job Management** — lifecycle states (intake → simmer → active → complete), search, filtering
@@ -26,57 +114,8 @@ When a job ignites, see who's available, what gear is free, and assign resources
 | Frontend | React 19, Vite, TypeScript, Tailwind CSS 4, shadcn/ui |
 | Database | PostgreSQL 16 with Row-Level Security |
 | Real-time | WebSockets (FastAPI native) |
-| Email | Celery + SMTP |
+| Email | Celery + SMTP (optional for dev) |
 | Auth | JWT (httpOnly cookies), RBAC (admin/crew) |
-
-## Quick Start
-
-### Prerequisites
-
-- Python 3.12+
-- Node.js 20+
-- PostgreSQL 16
-- Redis
-
-### Database Setup
-
-```bash
-# Create database and user
-psql -c "CREATE USER duct_tape_dev WITH PASSWORD 'duct_tape_dev';"
-psql -c "CREATE DATABASE duct_tape OWNER duct_tape_dev;"
-```
-
-### Backend
-
-```bash
-cd backend
-cp .env.example .env    # edit SECRET_KEY for production
-pip install -e ".[dev]"
-alembic upgrade head
-uvicorn app.main:app --reload
-```
-
-Backend runs at http://localhost:8000. API docs at http://localhost:8000/api/docs.
-
-### Frontend
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Frontend runs at http://localhost:5173. Proxies API calls to backend automatically.
-
-### Email (Development)
-
-For local email testing, use [MailHog](https://github.com/mailhog/MailHog):
-
-```bash
-# macOS
-brew install mailhog && mailhog
-# View emails at http://localhost:8025
-```
 
 ## Architecture
 
@@ -89,7 +128,7 @@ gt/
 │   │   ├── models/          # SQLAlchemy models with RLS
 │   │   ├── schemas/         # Pydantic request/response types
 │   │   └── tasks/           # Celery email tasks
-│   ├── alembic/             # Database migrations
+│   ├── seed.py              # Demo data generator
 │   └── tests/               # pytest integration tests
 ├── frontend/
 │   ├── src/
@@ -99,7 +138,7 @@ gt/
 │   │   ├── pages/           # Route pages
 │   │   └── types/           # TypeScript API types
 │   └── ...
-└── .planning/               # GSD project management artifacts
+└── .planning/               # Project management artifacts
 ```
 
 ### Multi-Tenancy
@@ -131,7 +170,4 @@ Every model uses `TenantMixin` with PostgreSQL Row-Level Security. Tenant contex
 | `/api/v1/ical/*` | iCal token management |
 | `/ical/{token}.ics` | Public iCal feed (no auth) |
 | `/ws` | WebSocket (real-time messages) |
-
-## License
-
-Private. Not open source.
+| `/api/docs` | Interactive API documentation (Swagger) |
