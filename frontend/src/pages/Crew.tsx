@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCrewList } from '@/hooks/useCrew';
 import { DataTable } from '@/components/features/DataTable';
-import type { CrewProfileResponse } from '@/types/api';
 
 export function CrewPage() {
   const navigate = useNavigate();

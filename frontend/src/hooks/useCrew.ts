@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import type { CrewProfileCreate, CrewProfileUpdate, CrewRatingCreate, AvailabilityPatternCreate } from '@/types/api';
+import type { CrewProfileCreate, CrewProfileUpdate } from '@/types/api';
 
 export function useCrewList(params?: { search?: string; skill?: string }) {
   return useQuery({
