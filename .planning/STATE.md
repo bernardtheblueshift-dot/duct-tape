@@ -2,39 +2,39 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
-stopped_at: Phase 6 context gathered
-last_updated: "2026-05-16T23:16:18.861Z"
+status: executing
+stopped_at: Completed 06-01-PLAN.md
+last_updated: "2026-05-17T02:56:59Z"
 progress:
   total_phases: 6
   completed_phases: 5
-  total_plans: 19
-  completed_plans: 19
+  total_plans: 21
+  completed_plans: 20
 ---
 
 # Project State: GT
 
-**Last updated:** 2026-05-16
+**Last updated:** 2026-05-17
 **Mode:** Yolo (fast iteration, validation through shipping)
 
 ## Project Reference
 
 **Core Value**: When a job ignites, a production manager can instantly see who's available, what gear is free, and assign resources from one place
 
-**Current Focus**: Phase 3 (Resource Management) — complete
+**Current Focus**: Phase 06 (Notifications) — in progress
 
 ## Current Position
 
-Phase: 05 (coordination-layer) — COMPLETE
-Plan: 5 of 5 — ALL PLANS SHIPPED
+Phase: 06 (notifications) — EXECUTING
+Plan: 2 of 2
 
 ### Phase Context
 
-Goal: Coordination tools - messages, tasks, files, and job summary enrichment
+Goal: Email notifications for crew assignments and job state changes
 
-Status: Phase 05 complete with all 5 plans shipped (messages, tasks, files, WebSocket, job coordination summary)
+Status: Plan 06-01 complete - crew receive immediate email notifications on assignment and job state changes
 
-Next action: Begin Phase 06 planning or start integration testing
+Next action: Execute Plan 06-02 (if exists) or proceed to next phase
 
 ## Performance Metrics
 
@@ -68,6 +68,7 @@ Next action: Begin Phase 06 planning or start integration testing
 | Phase 05 P04 | 143 | 2 tasks | 3 files |
 | Phase 05 P04 | 143 | 2 tasks | 3 files |
 | Phase 05 P05 | 184 | 2 tasks | 2 files |
+| Phase 06 P01 | 334 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -132,6 +133,9 @@ Next action: Begin Phase 06 planning or start integration testing
 | Batch queries for list view coordination summaries | Phase 5 P05 | 2026-05-16 | O(1) queries per resource type prevents N+1 problem; critical for performance as job count scales |
 | Skip recent items in list view | Phase 5 P05 | 2026-05-16 | Recent messages/files expensive for N jobs; counts-only sufficient for list, full data in detail view |
 | Overdue tasks exclude DONE status | Phase 5 P05 | 2026-05-16 | Deadline < now AND status != DONE ensures completed tasks don't count as overdue |
+| Only CONFIRMED crew receive job update emails | Phase 6 P01 | 2026-05-17 | PENDING/DECLINED crew not actively working, reduces noise |
+| Email triggers fire after DB commit or before delete | Phase 6 P01 | 2026-05-17 | Assignment: email only after successful creation. Deletion: need job data before it's removed |
+| Capture old_state before transition for email content | Phase 6 P01 | 2026-05-17 | Email body needs to show 'Status changed: intake → active' which requires old state |
 
 ### Open Questions
 
@@ -157,27 +161,26 @@ Next action: Begin Phase 06 planning or start integration testing
 
 ## Session Continuity
 
-**Last session:** 2026-05-16T23:16:18.854Z
-**Stopped at:** Phase 6 context gathered
+**Last session:** 2026-05-17T02:56:59Z
+**Stopped at:** Completed 06-01-PLAN.md
 
 **What changed this session:**
 
-- Executed Plan 05-05: Job Coordination Summary
-- Replaced placeholder messages/tasks/files lists with typed CoordinationSummary in JobResponse
-- Added 4 new summary schemas: MessageSummary, TaskSummary, FileSummary, CoordinationSummary
-- GET /api/v1/jobs/{id} returns full coordination data: message_count + 3 recent messages, task counts by status + overdue count, file_count + 3 recent files
-- GET /api/v1/jobs list uses batch queries for O(1) performance per resource type (not O(n))
-- PATCH /api/v1/jobs/{id} and POST /api/v1/jobs/{id}/transition also return enriched coordination data
-- Overdue tasks calculated as deadline < now AND status != DONE
-- List view skips recent items (counts only) for performance
-- Made 2 atomic commits (Task 1: schema, Task 2: enrichment)
+- Executed Plan 06-01: Email Notifications
+- Added 2 new Celery tasks: send_assignment_email, send_job_update_email
+- Crew receive email on assignment: "New assignment: {role} - {title}" with job details
+- Crew receive email on job state change: "Job update: {title}" with old → new state
+- Crew receive email on job deletion: "Job cancelled: {title}"
+- Only CONFIRMED crew receive notifications (PENDING/DECLINED excluded)
+- Email triggers fire after DB commit (assignment) or before delete (deletion)
+- TDD flow: RED (tests) → GREEN (implementation) → wiring (endpoints)
+- Made 3 atomic commits (1 RED, 1 GREEN, 1 wiring)
 - No deviations: plan executed exactly as written
 
 **Context for next session:**
 
-- Phase 05 COMPLETE - all 5 coordination layer plans shipped
-- Plans 05-01 through 05-05 complete: messages, tasks, files, WebSocket, job coordination summary
-- Next: Begin Phase 06 planning or start integration testing
+- Phase 06 Plan 01 COMPLETE - email notifications shipped
+- Next: Execute Plan 06-02 (if exists) or proceed to Phase 07 (Portal)
 - Tests ready to run once PostgreSQL available
 
 ---

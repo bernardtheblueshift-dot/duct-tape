@@ -11,7 +11,7 @@
 - [x] **Phase 2: Job Management** - Create, edit, search jobs with lifecycle states
 - [x] **Phase 3: Resource Management** - Crew and equipment with conflict detection (completed 2026-05-16)
 - [x] **Phase 4: Calendar & Scheduling** - Visual calendar with availability views (completed 2026-05-16)
-- [ ] **Phase 5: Coordination Layer (Messaging + Tasks + Files)** - Job-scoped collaboration tools
+- [x] **Phase 5: Coordination Layer (Messaging + Tasks + Files)** - Job-scoped collaboration tools (completed 2026-05-16)
 - [ ] **Phase 6: Notifications** - Email alerts for assignments and updates
 - [ ] **Phase 7: Crew Portal** - Crew-facing views and booking confirmations
 - [ ] **Phase 8: UI Polish** - Dark theme, mobile-responsive design
@@ -146,11 +146,11 @@ Plans:
 **Plans**: 5 plans in 3 waves
 
 Plans:
-- [ ] 05-01-PLAN.md — Models, schemas, core utilities, and migration for all coordination features (Wave 1)
-- [ ] 05-02-PLAN.md — Messages REST API + WebSocket real-time delivery + tests (Wave 2)
-- [ ] 05-03-PLAN.md — Tasks REST API with permissions and state transitions + tests (Wave 2)
-- [ ] 05-04-PLAN.md — Files upload, serve, delete API with tenant isolation + tests (Wave 2)
-- [ ] 05-05-PLAN.md — JobResponse enrichment with coordination summary data (Wave 3)
+- [x] 05-01-PLAN.md — Models, schemas, core utilities, and migration for all coordination features (Wave 1) ✓
+- [x] 05-02-PLAN.md — Messages REST API + WebSocket real-time delivery + tests (Wave 2) ✓
+- [x] 05-03-PLAN.md — Tasks REST API with permissions and state transitions + tests (Wave 2) ✓
+- [x] 05-04-PLAN.md — Files upload, serve, delete API with tenant isolation + tests (Wave 2) ✓
+- [x] 05-05-PLAN.md — JobResponse enrichment with coordination summary data (Wave 3) ✓
 
 ---
 
@@ -169,7 +169,7 @@ Plans:
 **Plans**: 2 plans in 1 wave
 
 Plans:
-- [ ] 06-01-PLAN.md — Email notification Celery tasks + wiring into assignment and job endpoints (Wave 1)
+- [x] 06-01-PLAN.md — Email notification Celery tasks + wiring into assignment and job endpoints (Wave 1) ✓
 - [ ] 06-02-PLAN.md — MessageLastSeen model + notification counts endpoint + last-seen tracking (Wave 1)
 
 ---

@@ -78,8 +78,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Notifications
 
-- [ ] **NOTF-01**: Email notification when crew is assigned to a job
-- [ ] **NOTF-02**: Email notification when a job is updated or cancelled
+- [x] **NOTF-01**: Email notification when crew is assigned to a job
+- [x] **NOTF-02**: Email notification when a job is updated or cancelled
 - [ ] **NOTF-03**: In-app notification badge for unread messages and new assignments
 
 ### Crew Portal
@@ -196,8 +196,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | FILE-02 | Phase 5 | Complete |
 | FILE-03 | Phase 5 | Complete |
 | FILE-04 | Phase 5 | Complete |
-| NOTF-01 | Phase 6 | Pending |
-| NOTF-02 | Phase 6 | Pending |
+| NOTF-01 | Phase 6 | Complete |
+| NOTF-02 | Phase 6 | Complete |
 | NOTF-03 | Phase 6 | Pending |
 | PORT-01 | Phase 7 | Pending |
 | PORT-02 | Phase 7 | Pending |
