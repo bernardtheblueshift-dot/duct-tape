@@ -1,4 +1,4 @@
-# Roadmap: Duct Tape
+# Roadmap: GT
 
 **Project:** Crew and resource management SaaS for event production companies
 **Core Value:** When a job ignites, a production manager can instantly see who's available, what gear is free, and assign resources from one place

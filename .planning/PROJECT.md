@@ -1,4 +1,4 @@
-# Duct Tape
+# GT
 
 ## What This Is
 

@@ -1,4 +1,4 @@
-# Requirements: Duct Tape
+# Requirements: GT
 
 **Defined:** 2026-05-15
 **Core Value:** When a job ignites, a production manager can instantly see who's available, what gear is free, and assign resources from one place.

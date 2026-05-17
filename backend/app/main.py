@@ -5,7 +5,7 @@ from app.api.v1 import auth, invitations, jobs, crew, equipment, assignments, ca
 
 # Create FastAPI application
 app = FastAPI(
-    title="Duct Tape API",
+    title="GT API",
     version="1.0.0",
     docs_url="/api/docs",
 )

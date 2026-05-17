@@ -16,7 +16,7 @@ def send_verification_email(email: str, token: str):
     verification_url = f"{settings.FRONTEND_URL}/verify-email?token={token}"
 
     subject = "Verify your email address"
-    body = f"""Welcome to Duct Tape!
+    body = f"""Welcome to GT!
 
 Click the link below to verify your email address:
 
@@ -89,8 +89,8 @@ def send_invitation_email(email: str, token: str, inviter_name: str, tenant_name
     """
     invitation_url = f"{settings.FRONTEND_URL}/accept-invitation?token={token}"
 
-    subject = f"You've been invited to join {tenant_name} on Duct Tape"
-    body = f"""{inviter_name} has invited you to join {tenant_name} on Duct Tape.
+    subject = f"You've been invited to join {tenant_name} on GT"
+    body = f"""{inviter_name} has invited you to join {tenant_name} on GT.
 
 Click the link below to create your account:
 

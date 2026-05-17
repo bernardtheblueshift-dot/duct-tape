@@ -12,7 +12,7 @@ progress:
   completed_plans: 19
 ---
 
-# Project State: Duct Tape
+# Project State: GT
 
 **Last updated:** 2026-05-16
 **Mode:** Yolo (fast iteration, validation through shipping)

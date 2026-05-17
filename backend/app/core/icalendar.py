@@ -24,7 +24,7 @@ def build_ical_feed(
         iCal feed as bytes
     """
     cal = Calendar()
-    cal.add('prodid', '-//Duct Tape Crew Management//NONSGML v1.0//EN')
+    cal.add('prodid', '-//GT//NONSGML v1.0//EN')
     cal.add('version', '2.0')
     cal.add('calscale', 'GREGORIAN')
     cal.add('method', 'PUBLISH')
