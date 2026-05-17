@@ -9,7 +9,7 @@ import { JobStateBadge } from '@/components/features/JobStateBadge';
 import { JobForm } from '@/components/features/JobForm';
 import { useCrewList } from '@/hooks/useCrew';
 import { useEquipmentList } from '@/hooks/useEquipment';
-import type { JobState, MessageCreate, TaskCreate, TaskPriority, CrewAssignmentCreate, EquipmentAssignmentCreate } from '@/types/api';
+import type { JobState, MessageCreate, TaskCreate, TaskPriority, CrewAssignmentCreate, EquipmentAssignmentCreate, FileResponse } from '@/types/api';
 
 const STATE_TRANSITIONS: Record<JobState, JobState | null> = {
   intake: 'simmer',
@@ -771,9 +771,82 @@ function AddTaskModal({ jobId, open, onClose, onSuccess }: { jobId: string; open
   );
 }
 
+// FilePreviewModal
+function FilePreviewModal({ file, open, onClose }: { file: FileResponse; open: boolean; onClose: () => void }) {
+  if (!open) return null;
+
+  const isImage = file.mime_type.startsWith('image/');
+  const isPDF = file.mime_type === 'application/pdf';
+  const canPreview = isImage || isPDF;
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+      <div className="bg-background rounded-lg p-4 max-w-4xl w-full max-h-[90vh] flex flex-col">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-medium">{file.original_filename}</h2>
+          <button onClick={onClose} className="p-1 hover:bg-surface rounded transition-colors">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="flex-1 overflow-auto mb-4">
+          {isImage && (
+            <div className="bg-black/20 rounded p-4 flex items-center justify-center">
+              <img
+                src={api.files.downloadUrl(file.id)}
+                alt={file.original_filename}
+                className="max-w-full max-h-[70vh] object-contain mx-auto rounded"
+              />
+            </div>
+          )}
+          {isPDF && (
+            <iframe
+              src={api.files.downloadUrl(file.id)}
+              className="w-full h-[70vh] rounded border border-border"
+              title={file.original_filename}
+            />
+          )}
+          {!canPreview && (
+            <div className="text-center py-12 text-muted">
+              <p className="mb-4">Preview not available for this file type</p>
+              <a
+                href={api.files.downloadUrl(file.id)}
+                download
+                className="px-4 py-2 bg-accent text-primary rounded-md hover:bg-accent/90 transition-colors text-sm font-medium inline-block"
+              >
+                Download File
+              </a>
+            </div>
+          )}
+        </div>
+        <div className="flex items-center justify-between border-t border-border pt-4">
+          <div className="flex gap-4 text-xs text-muted font-mono">
+            <span>{file.mime_type}</span>
+            <span>{formatFileSize(file.file_size)}</span>
+            <span>{format(new Date(file.created_at), 'dd MMM yyyy')}</span>
+          </div>
+          <a
+            href={api.files.downloadUrl(file.id)}
+            download
+            className="px-4 py-2 bg-accent text-primary rounded-md hover:bg-accent/90 transition-colors text-sm font-medium"
+          >
+            Download
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Files Tab
 function FilesTab({ jobId }: { jobId: string }) {
   const qc = useQueryClient();
+  const [previewFile, setPreviewFile] = useState<FileResponse | null>(null);
   const { data: files = [] } = useQuery({
     queryKey: ['files', jobId],
     queryFn: () => api.files.list(jobId),
@@ -832,16 +905,33 @@ function FilesTab({ jobId }: { jobId: string }) {
                   <span className="font-mono">{format(new Date(file.created_at), 'dd MMM yyyy')}</span>
                 </div>
               </div>
-              <a
-                href={api.files.downloadUrl(file.id)}
-                download
-                className="px-3 py-1.5 bg-surface-hover border border-border rounded-md hover:bg-surface text-sm font-medium transition-colors"
-              >
-                Download
-              </a>
+              <div className="flex gap-2">
+                {(file.mime_type.startsWith('image/') || file.mime_type === 'application/pdf') && (
+                  <button
+                    onClick={() => setPreviewFile(file)}
+                    className="px-3 py-1.5 bg-accent/20 text-accent border border-accent/30 rounded-md hover:bg-accent/30 text-sm font-medium transition-colors"
+                  >
+                    Preview
+                  </button>
+                )}
+                <a
+                  href={api.files.downloadUrl(file.id)}
+                  download
+                  className="px-3 py-1.5 bg-surface-hover border border-border rounded-md hover:bg-surface text-sm font-medium transition-colors"
+                >
+                  Download
+                </a>
+              </div>
             </div>
           ))}
         </div>
+      )}
+      {previewFile && (
+        <FilePreviewModal
+          file={previewFile}
+          open={!!previewFile}
+          onClose={() => setPreviewFile(null)}
+        />
       )}
     </div>
   );
