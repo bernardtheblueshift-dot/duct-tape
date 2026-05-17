@@ -8,10 +8,16 @@ env/
 venv/
 .venv/
 *.egg-info/
+dist/
 
 # Environment
 .env
 .env.local
+.env.production
+
+# Node
+node_modules/
+frontend/dist/
 
 # IDEs
 .vscode/
@@ -26,3 +32,9 @@ htmlcov/
 
 # Alembic
 backend/alembic/versions/*.pyc
+
+# Uploads
+uploads/
+
+# OS
+.DS_Store
