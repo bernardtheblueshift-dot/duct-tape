@@ -210,11 +210,11 @@ Plans:
 **Plans**: 7 plans in 4 waves
 
 Plans:
-- [ ] 08-01-PLAN.md — Bootstrap Vite + React + TypeScript + Tailwind + shadcn/ui, API client, types, backend /me endpoint (Wave 1)
-- [ ] 08-02-PLAN.md — Auth context, login/register pages, app shell layout (navbar + sidebar + router) (Wave 2)
-- [ ] 08-03-PLAN.md — Admin dashboard with bento grid, stat cards, upcoming jobs, crew availability (Wave 2)
-- [ ] 08-04-PLAN.md — Jobs list page with search/filter + job detail with tabs and CRUD (Wave 3)
-- [ ] 08-05-PLAN.md — Crew directory + detail page + equipment inventory with CRUD (Wave 3)
+- [x] 08-01-PLAN.md — Bootstrap Vite + React + TypeScript + Tailwind + shadcn/ui, API client, types, backend /me endpoint (Wave 1) ✓
+- [x] 08-02-PLAN.md — Auth context, login/register pages, app shell layout (navbar + sidebar + router) (Wave 2) ✓
+- [x] 08-03-PLAN.md — Admin dashboard with bento grid, stat cards, upcoming jobs, crew availability (Wave 2) ✓
+- [x] 08-04-PLAN.md — Jobs list page with search/filter + job detail with tabs and CRUD (Wave 3) ✓
+- [x] 08-05-PLAN.md — Crew directory + detail page + equipment inventory with CRUD (Wave 3) ✓
 - [ ] 08-06-PLAN.md — Calendar month view with colored events and navigation (Wave 3)
 - [ ] 08-07-PLAN.md — Crew portal (assignments, profile, availability) + visual checkpoint (Wave 4)
 

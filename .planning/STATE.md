@@ -9,7 +9,7 @@ progress:
   total_phases: 8
   completed_phases: 7
   total_plans: 30
-  completed_plans: 27
+  completed_plans: 28
 ---
 
 # Project State: GT
@@ -26,15 +26,16 @@ progress:
 ## Current Position
 
 Phase: 08 (ui-polish) — EXECUTING
-Plan: 5 of 7
+Current Plan: 6
+Total Plans: 7
 
 ### Phase Context
 
 Goal: UI Polish - dark theme, mobile-responsive design
 
-Status: Phase 08 Plan 04 complete - jobs list with search/filters, job detail with 5 tabs (crew, equipment, messages, tasks, files)
+Status: Phase 08 Plan 05 complete - crew directory with skills pills and ratings, crew detail with availability grid, equipment inventory with condition badges and inline CRUD
 
-Next action: Execute Plan 08-05 (Crew list and detail)
+Next action: Execute Plan 08-06 (Calendar view)
 
 ## Performance Metrics
 
@@ -76,6 +77,7 @@ Next action: Execute Plan 08-05 (Crew list and detail)
 | Phase 08 P02 | 133 | 2 tasks | 9 files |
 | Phase 08 P03 | 140 | 2 tasks | 7 files |
 | Phase 08 P04 | 225 | 2 tasks | 7 files |
+| Phase 08 P05 | 221 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -166,6 +168,9 @@ Next action: Execute Plan 08-05 (Crew list and detail)
 | Desktop table with mobile card fallback for responsive job list | Phase 8 P04 | 2026-05-17 | Responsive pattern from micheledu aesthetic, hidden md:block / md:hidden for clean breakpoints |
 | Tabbed job detail interface for 5 concern areas | Phase 8 P04 | 2026-05-17 | Crew, equipment, messages, tasks, files each get dedicated tab for clear separation of concerns |
 | Inline message sending and file upload without leaving job detail | Phase 8 P04 | 2026-05-17 | Lightweight coordination features with React Query invalidation, no full page transitions |
+| Truncated user_id display for crew names | Phase 8 P05 | 2026-05-17 | V1 has no User name lookup; showing "Crew {short_id}" provides unique identifier without full UUID clutter |
+| Inline condition dropdown in equipment table | Phase 8 P05 | 2026-05-17 | Quick status updates without modal/form overhead; badge itself is styled <select> for instant condition changes |
+| Skills pills with "+N more" truncation | Phase 8 P05 | 2026-05-17 | Max 3 visible skills prevents table row expansion; full list in detail view maintains scannable tables |
 
 ### Open Questions
 
@@ -191,27 +196,28 @@ Next action: Execute Plan 08-05 (Crew list and detail)
 
 ## Session Continuity
 
-**Last session:** 2026-05-17T05:14:37.883Z
-**Stopped at:** Completed 08-04-PLAN.md
+**Last session:** 2026-05-17T05:19:57.000Z
+**Stopped at:** Completed 08-05-PLAN.md
 
 **What changed this session:**
 
-- Executed Plan 08-01: Frontend Foundation
-- Bootstrapped Vite + React + TypeScript + Tailwind CSS v4 project from scratch
-- Configured dark theme (#0a0a0a background, custom CSS variables for job states)
-- Created comprehensive TypeScript types for ALL backend Pydantic schemas (frontend/src/types/api.ts)
-- Created type-safe API client with credentials: include (frontend/src/lib/api.ts)
-- Added backend /me and /ws-token endpoints to auth router
-- Made 2 atomic commits (Task 1: Vite setup, Task 2: types + API client + backend endpoints)
-- Build and type-check both pass
-- Zero deviations from plan
+- Executed Plan 08-05: Crew and Equipment Pages
+- Created crew hooks (useCrewList, useCrew, useCrewRatings, useCrewAvailability, mutations)
+- Built Crew page with DataTable, search, skill filter, archive toggle, skills pills (max 3 + "N more")
+- Built CrewDetail page with profile card, ratings history, 7-day availability grid
+- Created equipment hooks (useEquipmentList, useEquipment, CRUD mutations, condition update)
+- Built Equipment page with inline create form, search/filters, condition badge dropdowns, edit/delete actions
+- Wired all pages into router replacing stub pages
+- Fixed TypeScript errors (unused imports, null type guard for categories)
+- Made 2 atomic commits (Task 1: crew pages, Task 2: equipment page)
+- Build passes in 450ms
 
 **Context for next session:**
 
-- Phase 08 Plan 01 COMPLETE - frontend foundation ready
-- Plan 08-02 can now build Login/Register UI using api.auth methods
-- All future frontend plans depend on this foundation
-- 24/30 plans executed (80% complete)
+- Phase 08 Plan 05 COMPLETE - crew and equipment resource management ready
+- Plan 08-06 next: Calendar view with job/crew/equipment events
+- Resource management UI complete: Jobs (08-04), Crew (08-05), Equipment (08-05)
+- 28/30 plans executed (93% complete)
 
 ---
 
