@@ -14,6 +14,7 @@ from app.schemas.auth import (
     PasswordResetConfirm,
     MessageResponse,
 )
+from app.schemas.user import UserResponse
 from app.models.user import User, UserRole
 from app.models.tenant import Tenant
 from app.models.token import VerificationToken, PasswordResetToken
@@ -22,6 +23,7 @@ from app.core.security import (
     verify_password,
     create_access_token,
     create_refresh_token,
+    decode_access_token,
 )
 from app.tasks.email import send_verification_email, send_password_reset_email
 from app.config import settings
@@ -316,3 +318,77 @@ async def logout(response: Response):
     response.set_cookie(key="refresh_token", value="", max_age=0)
 
     return MessageResponse(message="Logged out")
+
+
+@router.get("/me", response_model=UserResponse)
+async def get_me(
+    access_token: str = Cookie(None),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Get current user from access token cookie.
+    Used by frontend to check auth state on page load.
+    """
+    if not access_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+        )
+
+    payload = decode_access_token(access_token)
+    user_id = payload.get("sub")
+
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token",
+        )
+
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found",
+        )
+
+    return user
+
+
+@router.get("/ws-token")
+async def get_ws_token(
+    access_token: str = Cookie(None),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Get a short-lived token for WebSocket authentication.
+    WebSocket cannot use httpOnly cookies, so this endpoint
+    returns the token value for the ws?token= query param.
+    """
+    if not access_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+        )
+
+    payload = decode_access_token(access_token)
+    user_id = payload.get("sub")
+
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token",
+        )
+
+    # Verify user exists
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found",
+        )
+
+    return {"token": access_token}
