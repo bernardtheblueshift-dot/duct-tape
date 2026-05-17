@@ -11,6 +11,7 @@ import { JobDetailPage } from '@/pages/JobDetail';
 import { CrewPage } from '@/pages/Crew';
 import { CrewDetailPage } from '@/pages/CrewDetail';
 import { EquipmentPage } from '@/pages/Equipment';
+import { CalendarPage } from '@/pages/Calendar';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,16 +21,6 @@ const queryClient = new QueryClient({
     },
   },
 });
-
-// Stub pages for routes not yet implemented
-function StubPage({ title }: { title: string }) {
-  return (
-    <div className="space-y-2">
-      <h1 className="text-2xl font-semibold">{title}</h1>
-      <p className="text-muted font-mono text-sm">Coming soon</p>
-    </div>
-  );
-}
 
 export default function App() {
   return (
@@ -53,7 +44,7 @@ export default function App() {
               <Route path="crew" element={<CrewPage />} />
               <Route path="crew/:crewId" element={<CrewDetailPage />} />
               <Route path="equipment" element={<EquipmentPage />} />
-              <Route path="calendar" element={<StubPage title="Calendar" />} />
+              <Route path="calendar" element={<CalendarPage />} />
             </Route>
           </Routes>
         </AuthProvider>
