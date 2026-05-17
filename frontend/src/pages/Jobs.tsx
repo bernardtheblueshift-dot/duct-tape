@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { Search } from 'lucide-react';
-import { useJobs } from '@/hooks/useJobs';
+import { useJobs, useCreateJob } from '@/hooks/useJobs';
 import { DataTable } from '@/components/features/DataTable';
 import { JobStateBadge } from '@/components/features/JobStateBadge';
+import { JobForm } from '@/components/features/JobForm';
 import type { JobResponse } from '@/types/api';
 
 export function JobsPage() {
@@ -17,6 +18,8 @@ export function JobsPage() {
     search: search || undefined,
     state: stateFilter || undefined
   });
+
+  const createMutation = useCreateJob();
 
   const columns = [
     {
@@ -125,18 +128,22 @@ export function JobsPage() {
         emptyMessage={search || stateFilter ? 'No jobs found' : 'No jobs yet. Create your first job to get started.'}
       />
 
-      {/* TODO: Create Job Modal - will be implemented in Task 2 */}
+      {/* Create Job Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-background rounded-lg p-6 max-w-md w-full">
+          <div className="bg-background rounded-lg p-6 max-w-2xl w-full">
             <h2 className="text-xl font-semibold mb-4">Create Job</h2>
-            <p className="text-muted text-sm mb-4">Job form will be implemented in Task 2</p>
-            <button
-              onClick={() => setShowCreateModal(false)}
-              className="px-4 py-2 bg-surface border border-border rounded-md hover:bg-surface-hover transition-colors"
-            >
-              Close
-            </button>
+            <JobForm
+              onSubmit={(data) => {
+                createMutation.mutate(data, {
+                  onSuccess: () => {
+                    setShowCreateModal(false);
+                  }
+                });
+              }}
+              onCancel={() => setShowCreateModal(false)}
+              loading={createMutation.isPending}
+            />
           </div>
         </div>
       )}

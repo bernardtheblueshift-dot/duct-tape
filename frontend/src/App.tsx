@@ -6,6 +6,8 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { LoginPage } from '@/pages/Login';
 import { RegisterPage } from '@/pages/Register';
 import { DashboardPage } from '@/pages/Dashboard';
+import { JobsPage } from '@/pages/Jobs';
+import { JobDetailPage } from '@/pages/JobDetail';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -43,8 +45,8 @@ export default function App() {
               </ProtectedRoute>
             }>
               <Route index element={<DashboardPage />} />
-              <Route path="jobs" element={<StubPage title="Jobs" />} />
-              <Route path="jobs/:jobId" element={<StubPage title="Job Detail" />} />
+              <Route path="jobs" element={<JobsPage />} />
+              <Route path="jobs/:jobId" element={<JobDetailPage />} />
               <Route path="crew" element={<StubPage title="Crew" />} />
               <Route path="crew/:crewId" element={<StubPage title="Crew Detail" />} />
               <Route path="equipment" element={<StubPage title="Equipment" />} />
