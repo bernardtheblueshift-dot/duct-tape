@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { ArrowLeft, Trash2, Edit2 } from 'lucide-react';
+import { ArrowLeft, Trash2, Edit2, X } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useJob, useTransitionJob, useUpdateJob, useDeleteJob } from '@/hooks/useJobs';
 import { JobStateBadge } from '@/components/features/JobStateBadge';
 import { JobForm } from '@/components/features/JobForm';
-import type { JobState, MessageCreate } from '@/types/api';
+import { useCrewList } from '@/hooks/useCrew';
+import { useEquipmentList } from '@/hooks/useEquipment';
+import type { JobState, MessageCreate, TaskCreate, TaskPriority, CrewAssignmentCreate, EquipmentAssignmentCreate } from '@/types/api';
 
 const STATE_TRANSITIONS: Record<JobState, JobState | null> = {
   intake: 'simmer',
@@ -247,13 +249,15 @@ export function JobDetailPage() {
 }
 
 // Crew Tab
-function CrewTab({ assignments }: { jobId: string; assignments: any[] }) {
+function CrewTab({ jobId, assignments }: { jobId: string; assignments: any[] }) {
+  const [showAssignModal, setShowAssignModal] = useState(false);
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">Assigned Crew</h3>
         <button
-          onClick={() => console.log('Assign crew clicked')}
+          onClick={() => setShowAssignModal(true)}
           className="px-4 py-2 bg-accent text-primary rounded-md hover:bg-accent/90 transition-colors text-sm font-medium"
         >
           Assign Crew
@@ -280,18 +284,28 @@ function CrewTab({ assignments }: { jobId: string; assignments: any[] }) {
           ))}
         </div>
       )}
+      {showAssignModal && (
+        <AssignCrewModal
+          jobId={jobId}
+          open={showAssignModal}
+          onClose={() => setShowAssignModal(false)}
+          onSuccess={() => setShowAssignModal(false)}
+        />
+      )}
     </div>
   );
 }
 
 // Equipment Tab
-function EquipmentTab({ assignments }: { jobId: string; assignments: any[] }) {
+function EquipmentTab({ jobId, assignments }: { jobId: string; assignments: any[] }) {
+  const [showAssignModal, setShowAssignModal] = useState(false);
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">Assigned Equipment</h3>
         <button
-          onClick={() => console.log('Assign equipment clicked')}
+          onClick={() => setShowAssignModal(true)}
           className="px-4 py-2 bg-accent text-primary rounded-md hover:bg-accent/90 transition-colors text-sm font-medium"
         >
           Assign Equipment
@@ -310,6 +324,14 @@ function EquipmentTab({ assignments }: { jobId: string; assignments: any[] }) {
             </div>
           ))}
         </div>
+      )}
+      {showAssignModal && (
+        <AssignEquipmentModal
+          jobId={jobId}
+          open={showAssignModal}
+          onClose={() => setShowAssignModal(false)}
+          onSuccess={() => setShowAssignModal(false)}
+        />
       )}
     </div>
   );
@@ -381,6 +403,7 @@ function MessagesTab({ jobId }: { jobId: string }) {
 
 // Tasks Tab
 function TasksTab({ jobId }: { jobId: string }) {
+  const [showAddTaskModal, setShowAddTaskModal] = useState(false);
   const { data: tasks = [] } = useQuery({
     queryKey: ['tasks', jobId],
     queryFn: () => api.tasks.list(jobId),
@@ -404,7 +427,7 @@ function TasksTab({ jobId }: { jobId: string }) {
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">Tasks</h3>
         <button
-          onClick={() => console.log('Add task clicked')}
+          onClick={() => setShowAddTaskModal(true)}
           className="px-4 py-2 bg-accent text-primary rounded-md hover:bg-accent/90 transition-colors text-sm font-medium"
         >
           Add Task
@@ -436,6 +459,314 @@ function TasksTab({ jobId }: { jobId: string }) {
           ))}
         </div>
       )}
+      {showAddTaskModal && (
+        <AddTaskModal
+          jobId={jobId}
+          open={showAddTaskModal}
+          onClose={() => setShowAddTaskModal(false)}
+          onSuccess={() => setShowAddTaskModal(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+// AssignCrewModal
+function AssignCrewModal({ jobId, open, onClose, onSuccess }: { jobId: string; open: boolean; onClose: () => void; onSuccess: () => void }) {
+  const queryClient = useQueryClient();
+  const [selectedCrewId, setSelectedCrewId] = useState('');
+  const [role, setRole] = useState('');
+  const [error, setError] = useState('');
+
+  const { data: crewList = [] } = useCrewList();
+
+  const createAssignment = useMutation({
+    mutationFn: (data: CrewAssignmentCreate) => api.assignments.createCrew(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['jobs', jobId] });
+      onSuccess();
+      onClose();
+    },
+    onError: (err: any) => {
+      setError(err.message || 'Failed to assign crew');
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedCrewId) return;
+    setError('');
+    createAssignment.mutate({
+      crew_id: selectedCrewId,
+      job_id: jobId,
+      role: role.trim() || null,
+    });
+  };
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+      <div className="bg-background rounded-lg p-6 max-w-md w-full">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold">Assign Crew</h2>
+          <button onClick={onClose} className="p-1 hover:bg-surface rounded transition-colors">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="text-sm text-muted mb-1 block">Crew Member</label>
+            <select
+              value={selectedCrewId}
+              onChange={(e) => setSelectedCrewId(e.target.value)}
+              required
+              className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-primary placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent"
+            >
+              <option value="">Select crew member...</option>
+              {crewList.map(crew => (
+                <option key={crew.id} value={crew.id}>
+                  {crew.user_id.substring(0, 8)}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-sm text-muted mb-1 block">Role (optional)</label>
+            <input
+              type="text"
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              placeholder="e.g. Camera Operator"
+              className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-primary placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent"
+            />
+          </div>
+          {error && <div className="text-sm text-red-500">{error}</div>}
+          <div className="flex gap-3">
+            <button
+              type="submit"
+              disabled={createAssignment.isPending || !selectedCrewId}
+              className="px-4 py-2 bg-accent text-primary rounded-md hover:bg-accent/90 transition-colors text-sm font-medium disabled:opacity-50"
+            >
+              {createAssignment.isPending ? 'Assigning...' : 'Assign'}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={createAssignment.isPending}
+              className="px-4 py-2 bg-surface border border-border rounded-md hover:bg-surface-hover transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// AssignEquipmentModal
+function AssignEquipmentModal({ jobId, open, onClose, onSuccess }: { jobId: string; open: boolean; onClose: () => void; onSuccess: () => void }) {
+  const queryClient = useQueryClient();
+  const [selectedEquipmentId, setSelectedEquipmentId] = useState('');
+  const [quantity, setQuantity] = useState(1);
+  const [error, setError] = useState('');
+
+  const { data: equipmentList = [] } = useEquipmentList();
+
+  const createAssignment = useMutation({
+    mutationFn: (data: EquipmentAssignmentCreate) => api.assignments.createEquipment(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['jobs', jobId] });
+      onSuccess();
+      onClose();
+    },
+    onError: (err: any) => {
+      setError(err.message || 'Failed to assign equipment');
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedEquipmentId) return;
+    setError('');
+    createAssignment.mutate({
+      equipment_id: selectedEquipmentId,
+      job_id: jobId,
+      quantity_assigned: quantity,
+    });
+  };
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+      <div className="bg-background rounded-lg p-6 max-w-md w-full">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold">Assign Equipment</h2>
+          <button onClick={onClose} className="p-1 hover:bg-surface rounded transition-colors">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="text-sm text-muted mb-1 block">Equipment</label>
+            <select
+              value={selectedEquipmentId}
+              onChange={(e) => setSelectedEquipmentId(e.target.value)}
+              required
+              className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-primary placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent"
+            >
+              <option value="">Select equipment...</option>
+              {equipmentList.map(equipment => (
+                <option key={equipment.id} value={equipment.id}>
+                  {equipment.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-sm text-muted mb-1 block">Quantity</label>
+            <input
+              type="number"
+              min={1}
+              value={quantity}
+              onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+              required
+              className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-primary placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent"
+            />
+          </div>
+          {error && <div className="text-sm text-red-500">{error}</div>}
+          <div className="flex gap-3">
+            <button
+              type="submit"
+              disabled={createAssignment.isPending || !selectedEquipmentId}
+              className="px-4 py-2 bg-accent text-primary rounded-md hover:bg-accent/90 transition-colors text-sm font-medium disabled:opacity-50"
+            >
+              {createAssignment.isPending ? 'Assigning...' : 'Assign'}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={createAssignment.isPending}
+              className="px-4 py-2 bg-surface border border-border rounded-md hover:bg-surface-hover transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// AddTaskModal
+function AddTaskModal({ jobId, open, onClose, onSuccess }: { jobId: string; open: boolean; onClose: () => void; onSuccess: () => void }) {
+  const queryClient = useQueryClient();
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [priority, setPriority] = useState<TaskPriority>('medium');
+  const [deadline, setDeadline] = useState('');
+  const [error, setError] = useState('');
+
+  const createTask = useMutation({
+    mutationFn: (data: TaskCreate) => api.tasks.create(jobId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks', jobId] });
+      queryClient.invalidateQueries({ queryKey: ['jobs', jobId] });
+      onSuccess();
+      onClose();
+    },
+    onError: (err: any) => {
+      setError(err.message || 'Failed to create task');
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title.trim()) return;
+    setError('');
+    createTask.mutate({
+      title: title.trim(),
+      description: description.trim() || null,
+      priority,
+      deadline: deadline || null,
+    });
+  };
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+      <div className="bg-background rounded-lg p-6 max-w-md w-full">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold">Add Task</h2>
+          <button onClick={onClose} className="p-1 hover:bg-surface rounded transition-colors">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="text-sm text-muted mb-1 block">Title</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+              className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-primary placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent"
+            />
+          </div>
+          <div>
+            <label className="text-sm text-muted mb-1 block">Description (optional)</label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-primary placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent"
+            />
+          </div>
+          <div>
+            <label className="text-sm text-muted mb-1 block">Priority</label>
+            <select
+              value={priority}
+              onChange={(e) => setPriority(e.target.value as TaskPriority)}
+              className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-primary placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent"
+            >
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="urgent">Urgent</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-sm text-muted mb-1 block">Deadline (optional)</label>
+            <input
+              type="datetime-local"
+              value={deadline}
+              onChange={(e) => setDeadline(e.target.value)}
+              className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-primary placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent"
+            />
+          </div>
+          {error && <div className="text-sm text-red-500">{error}</div>}
+          <div className="flex gap-3">
+            <button
+              type="submit"
+              disabled={createTask.isPending || !title.trim()}
+              className="px-4 py-2 bg-accent text-primary rounded-md hover:bg-accent/90 transition-colors text-sm font-medium disabled:opacity-50"
+            >
+              {createTask.isPending ? 'Creating...' : 'Create Task'}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={createTask.isPending}
+              className="px-4 py-2 bg-surface border border-border rounded-md hover:bg-surface-hover transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
