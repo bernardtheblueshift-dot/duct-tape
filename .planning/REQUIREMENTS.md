@@ -84,8 +84,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Crew Portal
 
-- [ ] **PORT-01**: Crew member dashboard showing upcoming assignments
-- [ ] **PORT-02**: Crew can view job details and briefs for their assignments
+- [x] **PORT-01**: Crew member dashboard showing upcoming assignments
+- [x] **PORT-02**: Crew can view job details and briefs for their assignments
 - [ ] **PORT-03**: Crew can confirm or decline assignments from their portal
 - [ ] **PORT-04**: Crew can update their own profile and availability
 
@@ -199,8 +199,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | NOTF-01 | Phase 6 | Complete |
 | NOTF-02 | Phase 6 | Complete |
 | NOTF-03 | Phase 6 | Complete |
-| PORT-01 | Phase 7 | Pending |
-| PORT-02 | Phase 7 | Pending |
+| PORT-01 | Phase 7 | Complete |
+| PORT-02 | Phase 7 | Complete |
 | PORT-03 | Phase 7 | Pending |
 | PORT-04 | Phase 7 | Pending |
 | UI-01 | Phase 8 | Pending |

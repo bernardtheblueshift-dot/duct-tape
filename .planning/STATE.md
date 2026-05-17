@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Phase 7 context gathered
-last_updated: "2026-05-17T03:32:27.749Z"
+stopped_at: Completed 07-01-PLAN.md
+last_updated: "2026-05-17T03:52:10.170Z"
 progress:
   total_phases: 7
   completed_phases: 6
-  total_plans: 21
-  completed_plans: 21
+  total_plans: 23
+  completed_plans: 22
 ---
 
 # Project State: GT
@@ -25,16 +25,16 @@ progress:
 
 ## Current Position
 
-Phase: 06 (notifications) — EXECUTING
+Phase: 07 (crew-portal) — EXECUTING
 Plan: 2 of 2
 
 ### Phase Context
 
-Goal: Email notifications for crew assignments and job state changes
+Goal: Crew portal for dashboard and assignment actions
 
-Status: Plan 06-01 complete - crew receive immediate email notifications on assignment and job state changes
+Status: Plan 07-01 complete - crew dashboard with upcoming/recent assignments + notification counts, assignment-scoped job detail access
 
-Next action: Execute Plan 06-02 (if exists) or proceed to next phase
+Next action: Execute Plan 07-02 (crew assignment actions)
 
 ## Performance Metrics
 
@@ -70,6 +70,7 @@ Next action: Execute Plan 06-02 (if exists) or proceed to next phase
 | Phase 05 P05 | 184 | 2 tasks | 2 files |
 | Phase 06 P01 | 334 | 2 tasks | 4 files |
 | Phase 06-notifications P02 | 3min | 2 tasks | 8 files |
+| Phase 07 P01 | 198 | 1 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -137,6 +138,9 @@ Next action: Execute Plan 06-02 (if exists) or proceed to next phase
 | Only CONFIRMED crew receive job update emails | Phase 6 P01 | 2026-05-17 | PENDING/DECLINED crew not actively working, reduces noise |
 | Email triggers fire after DB commit or before delete | Phase 6 P01 | 2026-05-17 | Assignment: email only after successful creation. Deletion: need job data before it's removed |
 | Capture old_state before transition for email content | Phase 6 P01 | 2026-05-17 | Email body needs to show 'Status changed: intake → active' which requires old state |
+| Dashboard aggregates upcoming/recent assignments + counts in single call | Phase 7 P01 | 2026-05-17 | Reduces latency on mobile networks for crew login, simpler client code |
+| Job detail enforces assignment-based access control | Phase 7 P01 | 2026-05-17 | 403 for unassigned crew prevents privacy leaks and enumeration attacks |
+| Portal uses require_active dependency | Phase 7 P01 | 2026-05-17 | Crew-accessible endpoints, not admin-only (correct permission model for portal) |
 
 ### Open Questions
 
@@ -162,8 +166,8 @@ Next action: Execute Plan 06-02 (if exists) or proceed to next phase
 
 ## Session Continuity
 
-**Last session:** 2026-05-17T03:32:27.741Z
-**Stopped at:** Phase 7 context gathered
+**Last session:** 2026-05-17T03:52:10.166Z
+**Stopped at:** Completed 07-01-PLAN.md
 
 **What changed this session:**
 
