@@ -24,6 +24,7 @@ When a job ignites, a production manager can instantly see who's available, what
 - [x] File sharing with tenant-isolated local storage and MIME validation — Validated in Phase 5: Coordination Layer
 - [x] Email notifications for crew assignment and job state changes — Validated in Phase 6: Notifications
 - [x] In-app notification badge counts (unread messages + pending assignments) — Validated in Phase 6: Notifications
+- [x] Crew-facing portal — dashboard, job detail, confirm/decline, profile/availability self-service — Validated in Phase 7: Crew Portal
 
 ### Active
 
@@ -31,7 +32,6 @@ When a job ignites, a production manager can instantly see who's available, what
 - [ ] Deep crew bench support (15-30+ freelancers per tenant)
 - [ ] Equipment tracking (hired/rented gear — rental management deferred to v2)
 - [ ] Email chain linking — attach/reference email threads to jobs
-- [ ] Crew-facing portal — view schedule, confirm bookings, access job briefs
 - [ ] Dark theme, event production focused UI
 
 ### Out of Scope
@@ -70,4 +70,4 @@ When a job ignites, a production manager can instantly see who's available, what
 | Cloud-deployed | Multiple users need remote access | — Pending |
 
 ---
-*Last updated: 2026-05-17 after Phase 6 completion*
+*Last updated: 2026-05-17 after Phase 7 completion*
