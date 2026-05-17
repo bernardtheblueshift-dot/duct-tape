@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 07-01-PLAN.md
-last_updated: "2026-05-17T03:52:10.170Z"
+stopped_at: Completed 07-02-PLAN.md
+last_updated: "2026-05-17T04:37:00.000Z"
 progress:
   total_phases: 7
-  completed_phases: 6
+  completed_phases: 7
   total_plans: 23
-  completed_plans: 22
+  completed_plans: 23
 ---
 
 # Project State: GT
@@ -25,16 +25,16 @@ progress:
 
 ## Current Position
 
-Phase: 07 (crew-portal) — EXECUTING
-Plan: 2 of 2
+Phase: 07 (crew-portal) — COMPLETE
+Plan: 2 of 2 (ALL PLANS COMPLETE)
 
 ### Phase Context
 
 Goal: Crew portal for dashboard and assignment actions
 
-Status: Plan 07-01 complete - crew dashboard with upcoming/recent assignments + notification counts, assignment-scoped job detail access
+Status: Phase 07 complete - crew can view dashboard, access job details, confirm/decline assignments, manage profile (phone/bio), and set availability patterns
 
-Next action: Execute Plan 07-02 (crew assignment actions)
+Next action: All v1 phases complete! Ready for production deployment or Phase 08 (Polish)
 
 ## Performance Metrics
 
@@ -71,6 +71,7 @@ Next action: Execute Plan 07-02 (crew assignment actions)
 | Phase 06 P01 | 334 | 2 tasks | 4 files |
 | Phase 06-notifications P02 | 3min | 2 tasks | 8 files |
 | Phase 07 P01 | 198 | 1 tasks | 4 files |
+| Phase 07 P02 | 276 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -141,6 +142,9 @@ Next action: Execute Plan 07-02 (crew assignment actions)
 | Dashboard aggregates upcoming/recent assignments + counts in single call | Phase 7 P01 | 2026-05-17 | Reduces latency on mobile networks for crew login, simpler client code |
 | Job detail enforces assignment-based access control | Phase 7 P01 | 2026-05-17 | 403 for unassigned crew prevents privacy leaks and enumeration attacks |
 | Portal uses require_active dependency | Phase 7 P01 | 2026-05-17 | Crew-accessible endpoints, not admin-only (correct permission model for portal) |
+| Field-restricted profile update schema | Phase 7 P02 | 2026-05-17 | PortalProfileUpdate only exposes phone/bio; skills/hourly_rate admin-only to preserve data integrity |
+| State machine validation for assignment actions | Phase 7 P02 | 2026-05-17 | ASSIGNMENT_TRANSITIONS enforces valid transitions; prevents confirming already-declined assignments |
+| Ownership checks on portal action endpoints | Phase 7 P02 | 2026-05-17 | Crew can only act on own assignments/profile/availability; prevents unauthorized actions |
 
 ### Open Questions
 
@@ -166,27 +170,28 @@ Next action: Execute Plan 07-02 (crew assignment actions)
 
 ## Session Continuity
 
-**Last session:** 2026-05-17T03:52:10.166Z
-**Stopped at:** Completed 07-01-PLAN.md
+**Last session:** 2026-05-17T04:37:00.000Z
+**Stopped at:** Completed 07-02-PLAN.md
 
 **What changed this session:**
 
-- Executed Plan 06-01: Email Notifications
-- Added 2 new Celery tasks: send_assignment_email, send_job_update_email
-- Crew receive email on assignment: "New assignment: {role} - {title}" with job details
-- Crew receive email on job state change: "Job update: {title}" with old → new state
-- Crew receive email on job deletion: "Job cancelled: {title}"
-- Only CONFIRMED crew receive notifications (PENDING/DECLINED excluded)
-- Email triggers fire after DB commit (assignment) or before delete (deletion)
-- TDD flow: RED (tests) → GREEN (implementation) → wiring (endpoints)
-- Made 3 atomic commits (1 RED, 1 GREEN, 1 wiring)
-- No deviations: plan executed exactly as written
+- Executed Plan 07-02: Crew Portal Actions
+- Added 8 new portal endpoints: assignments list, confirm, decline, profile GET/PATCH, availability PUT/GET
+- Crew can confirm/decline own assignments with ASSIGNMENT_TRANSITIONS state validation
+- Crew can view/update own profile (phone/bio only; skills/hourly_rate admin-only)
+- Crew can manage own availability patterns (upsert: delete all + insert)
+- All endpoints enforce ownership (403 for acting on another crew's data)
+- TDD flow: RED (tests) → GREEN (implementation)
+- Made 2 atomic commits (1 RED, 1 GREEN)
+- 2 auto-fixes: libmagic mock in conftest, test fixture addition
+- Portal router already registered from 07-01
 
 **Context for next session:**
 
-- Phase 06 Plan 01 COMPLETE - email notifications shipped
-- Next: Execute Plan 06-02 (if exists) or proceed to Phase 07 (Portal)
-- Tests ready to run once PostgreSQL available
+- Phase 07 COMPLETE - all crew portal functionality shipped
+- All 7 v1 phases complete (23/23 plans executed)
+- 43/43 requirements implemented
+- System ready for production deployment or polish phase
 
 ---
 
