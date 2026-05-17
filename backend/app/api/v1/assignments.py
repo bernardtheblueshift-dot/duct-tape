@@ -33,6 +33,7 @@ from app.schemas.assignment import (
     ConflictWarning,
     ConflictDetail,
 )
+from app.tasks.email import send_assignment_email
 
 router = APIRouter(prefix="/api/v1/assignments", tags=["assignments"])
 
@@ -153,6 +154,23 @@ async def assign_crew_to_job(
     db.add(assignment)
     await db.commit()
     await db.refresh(assignment)
+
+    # Send email notification to assigned crew member
+    crew_user_result = await db.execute(
+        select(User).where(User.id == crew.user_id)
+    )
+    crew_user = crew_user_result.scalar_one_or_none()
+    if crew_user:
+        send_assignment_email.delay(
+            email=crew_user.email,
+            job_title=job.title,
+            job_id=str(job.id),
+            role=assignment.role,
+            venue=job.venue,
+            scheduled_start=str(job.scheduled_start) if job.scheduled_start else None,
+            scheduled_end=str(job.scheduled_end) if job.scheduled_end else None,
+        )
+
     return assignment
 
 

@@ -15,6 +15,7 @@ from app.schemas.job import JobCreate, JobUpdate, JobResponse, JobTransitionRequ
 from app.models.user import User
 from app.core.state_machine import can_transition
 from app.models import Message, Task, TaskStatus, JobFile
+from app.tasks.email import send_job_update_email
 
 router = APIRouter(prefix="/api/v1/jobs", tags=["jobs"])
 
@@ -492,6 +493,8 @@ async def delete_job(
     Hard delete - job is permanently removed from database.
     RLS automatically filters by tenant.
     """
+    from app.models import CrewAssignment, AssignmentState, CrewProfile
+
     result = await db.execute(select(Job).where(Job.id == job_id))
     job = result.scalar_one_or_none()
 
@@ -500,6 +503,29 @@ async def delete_job(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Job not found",
         )
+
+    # Email all assigned crew about cancellation BEFORE deleting
+    assigned_crew_result = await db.execute(
+        select(CrewAssignment).where(
+            CrewAssignment.job_id == job_id,
+            CrewAssignment.status == AssignmentState.CONFIRMED,
+        )
+    )
+    assigned_crew = assigned_crew_result.scalars().all()
+    for ca in assigned_crew:
+        crew_user_result = await db.execute(
+            select(User).join(CrewProfile, CrewProfile.user_id == User.id).where(
+                CrewProfile.id == ca.crew_id
+            )
+        )
+        crew_user = crew_user_result.scalar_one_or_none()
+        if crew_user:
+            send_job_update_email.delay(
+                email=crew_user.email,
+                job_title=job.title,
+                job_id=str(job.id),
+                event_type="cancelled",
+            )
 
     await db.delete(job)
     await db.commit()
@@ -526,7 +552,7 @@ async def transition_job_state(
     Returns 400 if transition is invalid.
     RLS automatically filters by tenant.
     """
-    from app.models import CrewAssignment, EquipmentAssignment
+    from app.models import CrewAssignment, EquipmentAssignment, AssignmentState, CrewProfile
     from app.schemas.job import CrewAssignmentSummary, EquipmentAssignmentSummary
 
     # Get job
@@ -546,10 +572,38 @@ async def transition_job_state(
             detail=f"Invalid transition: {job.state.value} -> {transition.new_state.value}",
         )
 
+    # Capture old state before transition
+    old_state = job.state
+
     # Update state
     job.state = transition.new_state
     await db.commit()
     await db.refresh(job)
+
+    # Email all assigned crew about state change
+    assigned_crew_result = await db.execute(
+        select(CrewAssignment).where(
+            CrewAssignment.job_id == job_id,
+            CrewAssignment.status == AssignmentState.CONFIRMED,
+        )
+    )
+    assigned_crew = assigned_crew_result.scalars().all()
+    for ca in assigned_crew:
+        crew_user_result = await db.execute(
+            select(User).join(CrewProfile, CrewProfile.user_id == User.id).where(
+                CrewProfile.id == ca.crew_id
+            )
+        )
+        crew_user = crew_user_result.scalar_one_or_none()
+        if crew_user:
+            send_job_update_email.delay(
+                email=crew_user.email,
+                job_title=job.title,
+                job_id=str(job.id),
+                event_type="state_change",
+                old_state=old_state.value,
+                new_state=transition.new_state.value,
+            )
 
     # Query crew assignments
     crew_result = await db.execute(
