@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, text
@@ -6,12 +6,19 @@ from app.models.user import User
 from app.core.security import decode_access_token
 from app.database import get_db
 
-# OAuth2 scheme for token extraction from Authorization header
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", auto_error=False)
+
+
+def _extract_token(request: Request, header_token: str | None) -> str:
+    token = header_token or request.cookies.get("access_token")
+    if not token:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+    return token
 
 
 async def get_current_tenant(
-    token: str = Depends(oauth2_scheme),
+    request: Request,
+    header_token: str | None = Depends(oauth2_scheme),
     db: AsyncSession = Depends(get_db),
 ) -> str:
     """
@@ -31,6 +38,7 @@ async def get_current_tenant(
     Raises:
         HTTPException: 401 if token invalid or tenant_id missing
     """
+    token = _extract_token(request, header_token)
     payload = decode_access_token(token)
     tenant_id = payload.get("tenant_id")
 
@@ -40,15 +48,14 @@ async def get_current_tenant(
             detail="Invalid token: missing tenant_id",
         )
 
-    # Set PostgreSQL session variable for RLS context
-    # Using SET LOCAL ensures variable is scoped to current transaction
     await db.execute(text(f"SET LOCAL app.current_tenant_id = '{tenant_id}'"))
 
     return tenant_id
 
 
 async def get_current_user(
-    token: str = Depends(oauth2_scheme),
+    request: Request,
+    header_token: str | None = Depends(oauth2_scheme),
     db: AsyncSession = Depends(get_db),
 ) -> User:
     """
@@ -67,6 +74,7 @@ async def get_current_user(
     Raises:
         HTTPException: 401 if user not found, 403 if email not verified
     """
+    token = _extract_token(request, header_token)
     payload = decode_access_token(token)
     user_id = payload.get("sub")
 
