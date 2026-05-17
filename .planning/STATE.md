@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_plan: 7
+current_plan: 8
 status: completed
-stopped_at: Completed 08-07-PLAN.md
-last_updated: "2026-05-17T08:33:15.516Z"
+stopped_at: Completed 08-08-PLAN.md
+last_updated: "2026-05-17T09:08:18.306Z"
 progress:
   total_phases: 8
   completed_phases: 8
-  total_plans: 30
-  completed_plans: 30
+  total_plans: 31
+  completed_plans: 31
 ---
 
 # Project State: GT
@@ -27,16 +27,16 @@ progress:
 ## Current Position
 
 Phase: 08 (ui-polish) — COMPLETE
-Current Plan: 7
-Total Plans: 7
+Current Plan: 8
+Total Plans: 8
 
 ### Phase Context
 
 Goal: UI Polish - dark theme, mobile-responsive design
 
-Status: Phase 08 COMPLETE - all 7 plans executed. Complete frontend delivered: dark theme, responsive design, admin dashboard, jobs/crew/equipment/calendar pages, crew portal.
+Status: Phase 08 COMPLETE - all 8 plans executed. Complete frontend delivered: dark theme, responsive design, admin dashboard, jobs/crew/equipment/calendar pages (month + week views), crew portal.
 
-Next action: Project complete - all 8 phases and 30 plans executed
+Next action: Project complete - all 8 phases and 31 plans executed
 
 ## Performance Metrics
 
@@ -82,6 +82,7 @@ Next action: Project complete - all 8 phases and 30 plans executed
 | Phase 08 P06 | 99 | 1 tasks | 3 files |
 | Phase 08 P07 | 150 | 2 tasks | 4 files |
 | Phase 08 P07 | 150 | 2 tasks | 4 files |
+| Phase 08 P08 | 84 | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -178,6 +179,8 @@ Next action: Project complete - all 8 phases and 30 plans executed
 | Custom CSS Grid calendar instead of library | Phase 8 P06 | 2026-05-17 | date-fns + custom grid simpler than FullCalendar/react-big-calendar for v1 month view; faster to ship, no heavy dependencies |
 | Mobile-first portal design with role-based routing | Phase 8 P07 | 2026-05-17 | Crew use phones to check assignments; single-column stacking and tap-optimized buttons. Crew see portal on `/`, admin see dashboard |
 | Weekly availability grid toggle | Phase 8 P07 | 2026-05-17 | Simple Mon-Sun button grid for quick availability updates without complex calendar UI; no per-day time ranges |
+| CSS Grid over external library for week view timeline | Phase 8 P08 | 2026-05-17 | Custom 8-column grid (time + 7 days) with absolute-positioned events simpler than library integration for hourly timeline |
+| 3rem per hour for balance between vertical space and event legibility | Phase 8 P08 | 2026-05-17 | Allows 1-hour events comfortable padding while keeping 24 hours visible with reasonable scroll in 70vh container |
 
 ### Open Questions
 
@@ -203,8 +206,8 @@ Next action: Project complete - all 8 phases and 30 plans executed
 
 ## Session Continuity
 
-**Last session:** 2026-05-17T08:33:15.512Z
-**Stopped at:** Completed 08-07-PLAN.md
+**Last session:** 2026-05-17T09:08:18.302Z
+**Stopped at:** Completed 08-08-PLAN.md
 
 **What changed this session:**
 
