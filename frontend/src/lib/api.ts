@@ -58,7 +58,10 @@ export const api = {
     resetPasswordRequest: (email: string) => request<ApiMessage>('/api/v1/auth/reset-password-request', { method: 'POST', body: JSON.stringify({ email }) }),
     resetPassword: (token: string, new_password: string) => request<ApiMessage>('/api/v1/auth/reset-password', { method: 'POST', body: JSON.stringify({ token, new_password }) }),
     wsToken: () => request<{ token: string }>('/api/v1/auth/ws-token'),
-    invite: (data: InviteRequest) => request<ApiMessage>('/api/v1/invitations', { method: 'POST', body: JSON.stringify(data) }),
+    invite: (data: InviteRequest) => request<ApiMessage>('/api/v1/invitations/', { method: 'POST', body: JSON.stringify(data) }),
+  },
+  invitations: {
+    create: (data: InviteRequest) => request<ApiMessage>('/api/v1/invitations/', { method: 'POST', body: JSON.stringify(data) }),
   },
   jobs: {
     list: (params?: { search?: string; state?: string; venue?: string; start_date?: string; end_date?: string }) => {

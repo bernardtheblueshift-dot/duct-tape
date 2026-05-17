@@ -2,12 +2,15 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCrewList } from '@/hooks/useCrew';
 import { DataTable } from '@/components/features/DataTable';
+import { api } from '@/lib/api';
 
 export function CrewPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [skill, setSkill] = useState<string | undefined>(undefined);
   const [showArchived, setShowArchived] = useState(false);
+  const [showInvite, setShowInvite] = useState(false);
+  const [inviteStatus, setInviteStatus] = useState<string | null>(null);
 
   const { data: crew, isLoading } = useCrewList({ search: search || undefined, skill });
 
@@ -27,10 +30,46 @@ export function CrewPage() {
           <h1 className="text-2xl font-semibold">Crew</h1>
           <p className="text-muted font-mono text-sm">// crew directory</p>
         </div>
-        <button className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
-          Add Crew
+        <button
+          onClick={() => { setShowInvite(!showInvite); setInviteStatus(null); }}
+          className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+        >
+          {showInvite ? 'Cancel' : 'Invite Crew'}
         </button>
       </div>
+
+      {showInvite && (
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.currentTarget);
+            const email = fd.get('email') as string;
+            try {
+              await api.invitations.create({ email, role: 'crew' as any });
+              setInviteStatus(`Invitation sent to ${email}`);
+              e.currentTarget.reset();
+            } catch (err: any) {
+              setInviteStatus(err.message || 'Failed to send invitation');
+            }
+          }}
+          className="rounded-lg border border-border bg-surface p-4 space-y-3"
+        >
+          <p className="text-sm text-muted">Crew members need a user account. Send an invitation to create one.</p>
+          <div className="flex gap-3">
+            <input
+              type="email"
+              name="email"
+              placeholder="crew@example.com"
+              required
+              className="flex-1 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+            />
+            <button type="submit" className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-sm">
+              Send Invite
+            </button>
+          </div>
+          {inviteStatus && <p className="text-sm text-accent">{inviteStatus}</p>}
+        </form>
+      )}
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
