@@ -194,3 +194,28 @@ Plans:
 - [ ] 07-02-PLAN.md — Assignment confirm/decline + profile/availability self-service + router registration (Wave 2)
 
 ---
+
+### Phase 8: UI Polish
+**Goal**: React frontend with dark theme, mobile-responsive design, and admin dashboard providing at-a-glance view of upcoming jobs and resource status
+
+**Depends on**: All prior phases (backend complete)
+
+**Requirements**: UI-01, UI-02, UI-03
+
+**Success Criteria** (what must be TRUE):
+  1. Dark theme with event production aesthetic applied across all views
+  2. Mobile-responsive design works on phones without native app
+  3. Admin dashboard shows at-a-glance view of upcoming jobs and resource status
+
+**Plans**: 7 plans in 4 waves
+
+Plans:
+- [ ] 08-01-PLAN.md — Bootstrap Vite + React + TypeScript + Tailwind + shadcn/ui, API client, types, backend /me endpoint (Wave 1)
+- [ ] 08-02-PLAN.md — Auth context, login/register pages, app shell layout (navbar + sidebar + router) (Wave 2)
+- [ ] 08-03-PLAN.md — Admin dashboard with bento grid, stat cards, upcoming jobs, crew availability (Wave 2)
+- [ ] 08-04-PLAN.md — Jobs list page with search/filter + job detail with tabs and CRUD (Wave 3)
+- [ ] 08-05-PLAN.md — Crew directory + detail page + equipment inventory with CRUD (Wave 3)
+- [ ] 08-06-PLAN.md — Calendar month view with colored events and navigation (Wave 3)
+- [ ] 08-07-PLAN.md — Crew portal (assignments, profile, availability) + visual checkpoint (Wave 4)
+
+---
