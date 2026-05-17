@@ -153,3 +153,23 @@ Plans:
 - [ ] 05-05-PLAN.md — JobResponse enrichment with coordination summary data (Wave 3)
 
 ---
+
+### Phase 6: Notifications
+**Goal**: Email notifications for key events — crew assignment, job updates, and in-app notification badges for unread messages and new assignments
+
+**Depends on**: Phase 1, Phase 2, Phase 3, Phase 5
+
+**Requirements**: NOTF-01, NOTF-02, NOTF-03
+
+**Success Criteria** (what must be TRUE):
+  1. Crew receives email notification when assigned to a job
+  2. Crew receives email notification when a job they're assigned to is updated or cancelled
+  3. In-app notification badge shows count of unread messages and new assignments
+
+**Plans**: 2 plans in 1 wave
+
+Plans:
+- [ ] 06-01-PLAN.md — Email notification Celery tasks + wiring into assignment and job endpoints (Wave 1)
+- [ ] 06-02-PLAN.md — MessageLastSeen model + notification counts endpoint + last-seen tracking (Wave 1)
+
+---
