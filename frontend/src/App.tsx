@@ -8,6 +8,8 @@ import { RegisterPage } from '@/pages/Register';
 import { DashboardPage } from '@/pages/Dashboard';
 import { JobsPage } from '@/pages/Jobs';
 import { JobDetailPage } from '@/pages/JobDetail';
+import { CrewPage } from '@/pages/Crew';
+import { CrewDetailPage } from '@/pages/CrewDetail';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -47,8 +49,8 @@ export default function App() {
               <Route index element={<DashboardPage />} />
               <Route path="jobs" element={<JobsPage />} />
               <Route path="jobs/:jobId" element={<JobDetailPage />} />
-              <Route path="crew" element={<StubPage title="Crew" />} />
-              <Route path="crew/:crewId" element={<StubPage title="Crew Detail" />} />
+              <Route path="crew" element={<CrewPage />} />
+              <Route path="crew/:crewId" element={<CrewDetailPage />} />
               <Route path="equipment" element={<StubPage title="Equipment" />} />
               <Route path="calendar" element={<StubPage title="Calendar" />} />
             </Route>
