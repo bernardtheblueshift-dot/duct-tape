@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: in_progress
-stopped_at: "Completed 08-01-PLAN.md"
-last_updated: "2026-05-17T04:55:13Z"
+status: completed
+stopped_at: Completed 08-02-PLAN.md
+last_updated: "2026-05-17T05:02:06.906Z"
 progress:
   total_phases: 8
   completed_phases: 7
   total_plans: 30
-  completed_plans: 24
+  completed_plans: 25
 ---
 
 # Project State: GT
@@ -26,15 +26,15 @@ progress:
 ## Current Position
 
 Phase: 08 (ui-polish) — EXECUTING
-Plan: 2 of 7
+Plan: 3 of 7
 
 ### Phase Context
 
 Goal: UI Polish - dark theme, mobile-responsive design
 
-Status: Phase 08 Plan 01 complete - frontend foundation bootstrapped (Vite + React + TypeScript + Tailwind CSS v4 dark theme, type-safe API client, backend /me endpoint)
+Status: Phase 08 Plan 02 complete - login/register UI, auth context, protected routing, navbar + sidebar app shell
 
-Next action: Execute Plan 08-02 (Login/Register UI)
+Next action: Execute Plan 08-03 (Dashboard view)
 
 ## Performance Metrics
 
@@ -73,6 +73,7 @@ Next action: Execute Plan 08-02 (Login/Register UI)
 | Phase 07 P01 | 198 | 1 tasks | 4 files |
 | Phase 07 P02 | 276 | 2 tasks | 3 files |
 | Phase 08 P01 | 468 | 2 tasks | 15 files |
+| Phase 08 P02 | 133 | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -152,6 +153,10 @@ Next action: Execute Plan 08-02 (Login/Register UI)
 | Dark theme as default with #0a0a0a background | Phase 8 P01 | 2026-05-17 | Production event management typically happens in dark environments |
 | Backend /me endpoint reads from Cookie header | Phase 8 P01 | 2026-05-17 | Frontend needs auth check on page load, httpOnly cookies require server-side reading |
 | Separate /ws-token endpoint for WebSocket auth | Phase 8 P01 | 2026-05-17 | WebSocket connections cannot send httpOnly cookies, need token in query param |
+| AuthProvider calls api.auth.me() on mount for initial user state | Phase 8 P02 | 2026-05-17 | Frontend needs to restore session from httpOnly cookie on page load |
+| WebSocket manager singleton pattern for shared connection | Phase 8 P02 | 2026-05-17 | Single WebSocket connection shared across all components, job-based subscriptions |
+| React Query 30s poll for notification counts in navbar badge | Phase 8 P02 | 2026-05-17 | Real-time badge updates without full WebSocket complexity for simple counts |
+| Sidebar admin-only items conditional on user.role | Phase 8 P02 | 2026-05-17 | Crew users see only Dashboard (portal), admin sees all 5 nav sections |
 
 ### Open Questions
 
@@ -177,8 +182,8 @@ Next action: Execute Plan 08-02 (Login/Register UI)
 
 ## Session Continuity
 
-**Last session:** 2026-05-17T04:55:13Z
-**Stopped at:** Completed 08-01-PLAN.md
+**Last session:** 2026-05-17T05:02:06.901Z
+**Stopped at:** Completed 08-02-PLAN.md
 
 **What changed this session:**
 
