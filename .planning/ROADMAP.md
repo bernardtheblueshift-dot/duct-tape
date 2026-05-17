@@ -14,7 +14,7 @@
 - [x] **Phase 5: Coordination Layer (Messaging + Tasks + Files)** - Job-scoped collaboration tools (completed 2026-05-16)
 - [x] **Phase 6: Notifications** - Email alerts for assignments and updates (completed 2026-05-17)
 - [x] **Phase 7: Crew Portal** - Crew-facing views and booking confirmations (completed 2026-05-17)
-- [ ] **Phase 8: UI Polish** - Dark theme, mobile-responsive design
+- [x] **Phase 8: UI Polish** - Dark theme, mobile-responsive design (completed 2026-05-17)
 
 ## Phase Details
 
