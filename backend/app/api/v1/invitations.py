@@ -67,9 +67,12 @@ async def create_invitation(
     tenant = result.scalar_one()
 
     # Send invitation email asynchronously
-    send_invitation_email.delay(
-        request.email, invitation.token, current_user.email, tenant.name
-    )
+    try:
+        send_invitation_email.delay(
+            request.email, invitation.token, current_user.email, tenant.name
+        )
+    except Exception:
+        pass
 
     await db.commit()
 

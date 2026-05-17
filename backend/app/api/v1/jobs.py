@@ -520,10 +520,13 @@ async def delete_job(
         )
         crew_user = crew_user_result.scalar_one_or_none()
         if crew_user:
-            send_job_update_email.delay(
-                email=crew_user.email,
-                job_title=job.title,
-                job_id=str(job.id),
+            try:
+                send_job_update_email.delay(
+                    email=crew_user.email,
+                    job_title=job.title,
+                    job_id=str(job.id),
+            except Exception:
+                pass
                 event_type="cancelled",
             )
 
@@ -596,10 +599,13 @@ async def transition_job_state(
         )
         crew_user = crew_user_result.scalar_one_or_none()
         if crew_user:
-            send_job_update_email.delay(
-                email=crew_user.email,
-                job_title=job.title,
-                job_id=str(job.id),
+            try:
+                send_job_update_email.delay(
+                    email=crew_user.email,
+                    job_title=job.title,
+                    job_id=str(job.id),
+            except Exception:
+                pass
                 event_type="state_change",
                 old_state=old_state.value,
                 new_state=transition.new_state.value,

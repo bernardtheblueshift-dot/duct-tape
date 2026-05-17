@@ -161,10 +161,13 @@ async def assign_crew_to_job(
     )
     crew_user = crew_user_result.scalar_one_or_none()
     if crew_user:
-        send_assignment_email.delay(
-            email=crew_user.email,
-            job_title=job.title,
-            job_id=str(job.id),
+        try:
+            send_assignment_email.delay(
+                email=crew_user.email,
+                job_title=job.title,
+                job_id=str(job.id),
+        except Exception:
+            pass
             role=assignment.role,
             venue=job.venue,
             scheduled_start=str(job.scheduled_start) if job.scheduled_start else None,

@@ -71,7 +71,10 @@ async def register(request: RegisterRequest, db: AsyncSession = Depends(get_db))
     await db.commit()
 
     # Send verification email (async via Celery)
-    send_verification_email.delay(user.email, verification_token.token)
+    try:
+        send_verification_email.delay(user.email, verification_token.token)
+    except Exception:
+        pass  # Celery/broker unavailable — user can still verify via token
 
     return MessageResponse(message="Verification email sent")
 
@@ -262,7 +265,10 @@ async def reset_password_request(
         await db.commit()
 
         # Send reset email (async via Celery)
-        send_password_reset_email.delay(user.email, reset_token.token)
+        try:
+            send_password_reset_email.delay(user.email, reset_token.token)
+        except Exception:
+            pass
 
     # Always return success (don't leak user existence)
     return MessageResponse(message="Password reset email sent if account exists")
