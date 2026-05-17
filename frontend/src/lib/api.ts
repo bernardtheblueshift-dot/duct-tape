@@ -114,7 +114,7 @@ export const api = {
     deleteEquipment: (id: string) => request<void>(`/api/v1/assignments/equipment/${id}`, { method: 'DELETE' }),
   },
   calendar: {
-    events: (params: { start_date: string; end_date: string; resource_type?: string }) => {
+    events: (params: { start: string; end: string; resource_type?: string }) => {
       const query = new URLSearchParams(params as Record<string, string>);
       return request<CalendarEventsResponse>(`/api/v1/calendar/events?${query}`);
     },

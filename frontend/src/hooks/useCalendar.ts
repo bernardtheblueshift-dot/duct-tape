@@ -8,7 +8,7 @@ export function useCalendarEvents(currentDate: Date) {
 
   return useQuery({
     queryKey: ['calendar-events', start, end],
-    queryFn: () => api.calendar.events({ start_date: start, end_date: end }),
+    queryFn: () => api.calendar.events({ start, end }),
   });
 }
 
@@ -18,6 +18,6 @@ export function useWeekCalendarEvents(currentDate: Date) {
 
   return useQuery({
     queryKey: ['calendar-events-week', start, end],
-    queryFn: () => api.calendar.events({ start_date: start, end_date: end }),
+    queryFn: () => api.calendar.events({ start, end }),
   });
 }
