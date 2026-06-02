@@ -181,6 +181,37 @@ export function JobDetailPage() {
             <div className="text-base whitespace-pre-wrap">{job.description}</div>
           </div>
         )}
+        {(job.source || job.contact_name || job.contact_email || job.contact_phone) && (
+          <div className="border-t border-dashed border-border pt-4 mt-4">
+            <div className="text-xs text-muted font-mono mb-3">// intake</div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {job.source && (
+                <div>
+                  <div className="text-sm text-muted mb-1">Source</div>
+                  <span className="px-2 py-0.5 rounded text-xs font-mono uppercase bg-accent/20 text-accent">{job.source}</span>
+                </div>
+              )}
+              {job.contact_name && (
+                <div>
+                  <div className="text-sm text-muted mb-1">Contact</div>
+                  <div className="text-base">{job.contact_name}</div>
+                </div>
+              )}
+              {job.contact_email && (
+                <div>
+                  <div className="text-sm text-muted mb-1">Email</div>
+                  <div className="text-base font-mono">{job.contact_email}</div>
+                </div>
+              )}
+              {job.contact_phone && (
+                <div>
+                  <div className="text-sm text-muted mb-1">Phone</div>
+                  <div className="text-base font-mono">{job.contact_phone}</div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Tabs */}

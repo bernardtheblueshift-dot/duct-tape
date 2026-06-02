@@ -53,6 +53,14 @@ export function JobsPage() {
       hideOnMobile: true,
     },
     {
+      key: 'source',
+      header: 'Source',
+      render: (job: JobResponse) => job.source ? (
+        <span className="px-1.5 py-0.5 rounded text-[10px] font-mono uppercase bg-accent/20 text-accent">{job.source}</span>
+      ) : <span className="text-muted">—</span>,
+      hideOnMobile: true,
+    },
+    {
       key: 'crew',
       header: 'Crew',
       render: (job: JobResponse) => (

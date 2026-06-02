@@ -9,9 +9,9 @@ from app.database import engine, AsyncSessionLocal as async_session
 from app.models.base import Base
 from app.models.tenant import Tenant
 from app.models.user import User, UserRole
-from app.models.job import Job, JobState
+from app.models.job import Job, JobState, JobSource
 from app.models.crew_profile import CrewProfile
-from app.models.equipment import Equipment, EquipmentCondition
+from app.models.equipment import Equipment, EquipmentCondition, OwnershipType
 from app.models.assignment import CrewAssignment, EquipmentAssignment, AssignmentState
 from app.models.availability import AvailabilityPattern
 from app.models.rating import CrewRating
@@ -97,25 +97,30 @@ async def seed():
         db.add(AvailabilityPattern(id=uuid4(), crew_id=profiles[6].id, day_of_week=6, is_available=False, tenant_id=tid))
 
         # === EQUIPMENT ===
+        # owned = (name, cat, qty, cond, notes, ownership, vendor, cost/day, rental_start, rental_end)
         equip_data = [
-            ("Sony FX6", "Camera", 3, EquipmentCondition.GOOD, "S/N: FX6-001/002/003"),
-            ("Sennheiser EW-D", "Audio", 8, EquipmentCondition.GOOD, "Digital wireless mic kit"),
-            ("Yamaha CL3", "Audio", 1, EquipmentCondition.GOOD, "64-channel digital console"),
-            ("ETC Ion Xe", "Lighting", 2, EquipmentCondition.GOOD, "Lighting console"),
-            ("Barco UDX-4K32", "Video", 2, EquipmentCondition.GOOD, "32K lumen projector"),
-            ("Blackmagic ATEM 4 M/E", "Video", 1, EquipmentCondition.GOOD, "Production switcher"),
-            ("Generic LED Wash", "Lighting", 24, EquipmentCondition.GOOD, "RGBW wash fixtures"),
-            ("Shure ULXD4Q", "Audio", 3, EquipmentCondition.GOOD, "Quad wireless receiver"),
-            ("Ross Carbonite Black+", "Video", 1, EquipmentCondition.FAIR, "2 M/E switcher - needs firmware update"),
-            ("Cable Trunk A", "Rigging", 4, EquipmentCondition.GOOD, "SDI/Power/DMX cable sets"),
-            ("Truss Section 3m", "Rigging", 12, EquipmentCondition.GOOD, "290mm box truss"),
-            ("Martin MAC Aura", "Lighting", 8, EquipmentCondition.POOR, "2 units need lamp replacement"),
+            ("Sony FX6", "Camera", 3, EquipmentCondition.GOOD, "S/N: FX6-001/002/003", OwnershipType.OWNED, None, None, None, None),
+            ("Sennheiser EW-D", "Audio", 8, EquipmentCondition.GOOD, "Digital wireless mic kit", OwnershipType.OWNED, None, None, None, None),
+            ("Yamaha CL3", "Audio", 1, EquipmentCondition.GOOD, "64-channel digital console", OwnershipType.OWNED, None, None, None, None),
+            ("ETC Ion Xe", "Lighting", 2, EquipmentCondition.GOOD, "Lighting console", OwnershipType.OWNED, None, None, None, None),
+            ("Barco UDX-4K32", "Video", 2, EquipmentCondition.GOOD, "32K lumen projector", OwnershipType.RENTED, "Hibino AV", 85000, now + timedelta(days=5), now + timedelta(days=8)),
+            ("Blackmagic ATEM 4 M/E", "Video", 1, EquipmentCondition.GOOD, "Production switcher", OwnershipType.OWNED, None, None, None, None),
+            ("Generic LED Wash", "Lighting", 24, EquipmentCondition.GOOD, "RGBW wash fixtures", OwnershipType.OWNED, None, None, None, None),
+            ("Shure ULXD4Q", "Audio", 3, EquipmentCondition.GOOD, "Quad wireless receiver", OwnershipType.OWNED, None, None, None, None),
+            ("Ross Carbonite Black+", "Video", 1, EquipmentCondition.FAIR, "2 M/E switcher - needs firmware update", OwnershipType.OWNED, None, None, None, None),
+            ("Cable Trunk A", "Rigging", 4, EquipmentCondition.GOOD, "SDI/Power/DMX cable sets", OwnershipType.OWNED, None, None, None, None),
+            ("Truss Section 3m", "Rigging", 12, EquipmentCondition.GOOD, "290mm box truss", OwnershipType.RENTED, "Stage Gear Tokyo", 12000, now + timedelta(days=19), now + timedelta(days=23)),
+            ("Martin MAC Aura", "Lighting", 8, EquipmentCondition.POOR, "2 units need lamp replacement", OwnershipType.OWNED, None, None, None, None),
+            ("Christie D4K40-RGB", "Video", 1, EquipmentCondition.GOOD, "40K lumen laser projector - rented for Nova launch", OwnershipType.RENTED, "Visual Solutions Inc", 150000, now + timedelta(days=6), now + timedelta(days=8)),
+            ("L-Acoustics K2", "Audio", 12, EquipmentCondition.GOOD, "Line array for summer festival", OwnershipType.RENTED, "Sound Pro Rentals", 45000, now + timedelta(days=20), now + timedelta(days=23)),
         ]
         equips = []
-        for name, cat, qty, cond, notes in equip_data:
+        for name, cat, qty, cond, notes, ownership, vendor, cost, r_start, r_end in equip_data:
             e = Equipment(
                 id=uuid4(), name=name, category=cat, quantity=qty,
-                condition=cond, notes=notes, tenant_id=tid,
+                condition=cond, notes=notes, ownership=ownership,
+                rental_vendor=vendor, rental_cost_per_day=cost,
+                rental_start=r_start, rental_end=r_end, tenant_id=tid,
             )
             equips.append(e)
             db.add(e)
@@ -126,37 +131,47 @@ async def seed():
             # Active jobs
             ("Q2 All-Hands", "Company quarterly meeting with keynote and breakout sessions",
              "Tokyo Midtown Hall", JobState.ACTIVE,
-             now + timedelta(days=3, hours=9), now + timedelta(days=3, hours=17)),
+             now + timedelta(days=3, hours=9), now + timedelta(days=3, hours=17),
+             JobSource.DIRECT, "Tanaka Hiroshi", "tanaka@acmecorp.jp", None),
             ("Product Launch: Project Nova", "New product unveiling with live demo and press conference",
              "Roppongi Hills Arena", JobState.ACTIVE,
-             now + timedelta(days=7, hours=10), now + timedelta(days=7, hours=16)),
+             now + timedelta(days=7, hours=10), now + timedelta(days=7, hours=16),
+             JobSource.EMAIL, "Sarah Chen", "sarah@novainc.com", "+81-3-1234-5678"),
             # Simmering
             ("Summer Festival Stage", "Main stage production for annual summer festival",
              "Odaiba Marine Park", JobState.SIMMER,
-             now + timedelta(days=21, hours=11), now + timedelta(days=22, hours=22)),
+             now + timedelta(days=21, hours=11), now + timedelta(days=22, hours=22),
+             JobSource.REFERRAL, "Yamada Productions", "info@yamada-prod.co.jp", None),
             ("Board Meeting Webcast", "Quarterly board meeting with remote attendees via stream",
              "HQ Conference Room 36F", JobState.SIMMER,
-             now + timedelta(days=14, hours=14), now + timedelta(days=14, hours=16)),
+             now + timedelta(days=14, hours=14), now + timedelta(days=14, hours=16),
+             JobSource.DIRECT, None, None, None),
             # Intake
             ("Client Dinner: Acme Corp", "Intimate dinner event with ambient AV",
              "Palace Hotel Tokyo", JobState.INTAKE,
-             now + timedelta(days=30, hours=18), now + timedelta(days=30, hours=22)),
+             now + timedelta(days=30, hours=18), now + timedelta(days=30, hours=22),
+             JobSource.PHONE, "Suzuki Mika", None, "+81-90-8765-4321"),
             ("Training Video Shoot", "3-day corporate training video production",
              "Studio A, Shibuya", JobState.INTAKE,
-             now + timedelta(days=28, hours=9), now + timedelta(days=30, hours=18)),
+             now + timedelta(days=28, hours=9), now + timedelta(days=30, hours=18),
+             JobSource.WEBSITE, "Mike Johnson", "mike.j@globalcorp.com", None),
             # Completed
             ("FY26 Kickoff", "Annual company kickoff with live performances",
              "Tokyo International Forum", JobState.COMPLETE,
-             now - timedelta(days=5, hours=8), now - timedelta(days=5)),
+             now - timedelta(days=5, hours=8), now - timedelta(days=5),
+             JobSource.DIRECT, None, None, None),
             ("Press Conference: Q1 Results", "Financial results announcement with Q&A",
              "HQ Press Room", JobState.COMPLETE,
-             now - timedelta(days=12, hours=6), now - timedelta(days=12, hours=2)),
+             now - timedelta(days=12, hours=6), now - timedelta(days=12, hours=2),
+             JobSource.EMAIL, "PR Team", "pr@client.co.jp", None),
         ]
         jobs = []
-        for title, desc, venue, state, start, end in jobs_data:
+        for title, desc, venue, state, start, end, source, c_name, c_email, c_phone in jobs_data:
             j = Job(
                 id=uuid4(), title=title, description=desc, venue=venue,
-                state=state, scheduled_start=start, scheduled_end=end, tenant_id=tid,
+                state=state, scheduled_start=start, scheduled_end=end,
+                source=source, contact_name=c_name, contact_email=c_email,
+                contact_phone=c_phone, tenant_id=tid,
             )
             jobs.append(j)
             db.add(j)
@@ -294,7 +309,8 @@ async def seed():
     print(f"  Tenant: Blue Shift Productions")
     print(f"  Jobs: {len(jobs_data)} (2 active, 2 simmer, 2 intake, 2 complete)")
     print(f"  Crew: {len(crew_data)}")
-    print(f"  Equipment: {len(equip_data)} items")
+    rented = sum(1 for *_, o, _, _, _, _ in equip_data if o == OwnershipType.RENTED)
+    print(f"  Equipment: {len(equip_data)} items ({rented} rented)")
     print(f"  Assignments: {len(assignments)} crew + {len(eq_assignments)} equipment")
     print(f"  Messages: {len(msg_data)}")
     print(f"  Tasks: {len(tasks_data)}")

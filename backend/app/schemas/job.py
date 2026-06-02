@@ -3,7 +3,7 @@
 from pydantic import BaseModel, ConfigDict, Field
 from datetime import datetime
 from uuid import UUID
-from app.models.job import JobState
+from app.models.job import JobState, JobSource
 
 
 class CrewAssignmentSummary(BaseModel):
@@ -83,6 +83,10 @@ class JobCreate(BaseModel):
     venue: str | None = None
     scheduled_start: datetime | None = None
     scheduled_end: datetime | None = None
+    source: JobSource | None = None
+    contact_name: str | None = None
+    contact_email: str | None = None
+    contact_phone: str | None = None
 
 
 class JobUpdate(BaseModel):
@@ -93,11 +97,14 @@ class JobUpdate(BaseModel):
     venue: str | None = None
     scheduled_start: datetime | None = None
     scheduled_end: datetime | None = None
-    # state excluded - use transition endpoint
+    source: JobSource | None = None
+    contact_name: str | None = None
+    contact_email: str | None = None
+    contact_phone: str | None = None
 
 
 class JobResponse(BaseModel):
-    """Response schema with all job fields + placeholders for future phases"""
+    """Response schema with all job fields"""
 
     id: UUID
     title: str
@@ -106,13 +113,15 @@ class JobResponse(BaseModel):
     scheduled_start: datetime | None
     scheduled_end: datetime | None
     state: JobState
+    source: JobSource | None = None
+    contact_name: str | None = None
+    contact_email: str | None = None
+    contact_phone: str | None = None
     created_at: datetime
     updated_at: datetime
 
-    # Phase 3: Resource Management - populated with real data
     assigned_crew: list[CrewAssignmentSummary] = []
     assigned_gear: list[EquipmentAssignmentSummary] = []
-    # Phase 5: Coordination Layer - real summary data
     coordination: CoordinationSummary = CoordinationSummary()
 
     model_config = ConfigDict(from_attributes=True)

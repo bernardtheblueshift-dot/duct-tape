@@ -3,7 +3,7 @@
 from pydantic import BaseModel, ConfigDict, Field
 from datetime import datetime
 from uuid import UUID
-from app.models.equipment import EquipmentCondition
+from app.models.equipment import EquipmentCondition, OwnershipType
 
 
 class EquipmentCreate(BaseModel):
@@ -15,6 +15,11 @@ class EquipmentCreate(BaseModel):
     condition: EquipmentCondition = EquipmentCondition.GOOD
     notes: str | None = None
     serial_number: str | None = None
+    ownership: OwnershipType = OwnershipType.OWNED
+    rental_vendor: str | None = None
+    rental_cost_per_day: float | None = Field(None, ge=0)
+    rental_start: datetime | None = None
+    rental_end: datetime | None = None
 
 
 class EquipmentUpdate(BaseModel):
@@ -26,6 +31,11 @@ class EquipmentUpdate(BaseModel):
     condition: EquipmentCondition | None = None
     notes: str | None = None
     serial_number: str | None = None
+    ownership: OwnershipType | None = None
+    rental_vendor: str | None = None
+    rental_cost_per_day: float | None = Field(None, ge=0)
+    rental_start: datetime | None = None
+    rental_end: datetime | None = None
 
 
 class EquipmentResponse(BaseModel):
@@ -38,6 +48,11 @@ class EquipmentResponse(BaseModel):
     condition: EquipmentCondition
     notes: str | None
     serial_number: str | None
+    ownership: OwnershipType
+    rental_vendor: str | None
+    rental_cost_per_day: float | None
+    rental_start: datetime | None
+    rental_end: datetime | None
     created_at: datetime
     updated_at: datetime
 

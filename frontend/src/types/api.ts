@@ -2,6 +2,8 @@
 export type JobState = 'intake' | 'simmer' | 'active' | 'complete';
 export type AssignmentState = 'pending' | 'confirmed' | 'declined';
 export type EquipmentCondition = 'good' | 'fair' | 'poor' | 'maintenance';
+export type OwnershipType = 'owned' | 'rented';
+export type JobSource = 'direct' | 'email' | 'phone' | 'referral' | 'website' | 'other';
 export type TaskStatus = 'todo' | 'in_progress' | 'done';
 export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
 export type UserRole = 'admin' | 'crew';
@@ -76,6 +78,10 @@ export interface JobCreate {
   venue?: string | null;
   scheduled_start?: string | null;
   scheduled_end?: string | null;
+  source?: JobSource | null;
+  contact_name?: string | null;
+  contact_email?: string | null;
+  contact_phone?: string | null;
 }
 
 export interface JobUpdate {
@@ -84,6 +90,10 @@ export interface JobUpdate {
   venue?: string | null;
   scheduled_start?: string | null;
   scheduled_end?: string | null;
+  source?: JobSource | null;
+  contact_name?: string | null;
+  contact_email?: string | null;
+  contact_phone?: string | null;
 }
 
 export interface JobResponse {
@@ -94,6 +104,10 @@ export interface JobResponse {
   scheduled_start: string | null;
   scheduled_end: string | null;
   state: JobState;
+  source: JobSource | null;
+  contact_name: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
   created_at: string;
   updated_at: string;
   assigned_crew: CrewAssignmentSummary[];
@@ -183,6 +197,11 @@ export interface EquipmentCreate {
   condition?: EquipmentCondition;
   notes?: string | null;
   serial_number?: string | null;
+  ownership?: OwnershipType;
+  rental_vendor?: string | null;
+  rental_cost_per_day?: number | null;
+  rental_start?: string | null;
+  rental_end?: string | null;
 }
 
 export interface EquipmentUpdate {
@@ -192,6 +211,11 @@ export interface EquipmentUpdate {
   condition?: EquipmentCondition | null;
   notes?: string | null;
   serial_number?: string | null;
+  ownership?: OwnershipType | null;
+  rental_vendor?: string | null;
+  rental_cost_per_day?: number | null;
+  rental_start?: string | null;
+  rental_end?: string | null;
 }
 
 export interface EquipmentResponse {
@@ -202,6 +226,11 @@ export interface EquipmentResponse {
   condition: EquipmentCondition;
   notes: string | null;
   serial_number: string | null;
+  ownership: OwnershipType;
+  rental_vendor: string | null;
+  rental_cost_per_day: number | null;
+  rental_start: string | null;
+  rental_end: string | null;
   created_at: string;
   updated_at: string;
 }

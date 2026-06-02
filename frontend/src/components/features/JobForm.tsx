@@ -3,12 +3,18 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import type { JobResponse } from '@/types/api';
 
+const JOB_SOURCES = ['direct', 'email', 'phone', 'referral', 'website', 'other'] as const;
+
 const jobSchema = z.object({
   title: z.string().min(1, 'Title required').max(200),
   description: z.string().optional().nullable(),
   venue: z.string().optional().nullable(),
   scheduled_start: z.string().optional().nullable(),
   scheduled_end: z.string().optional().nullable(),
+  source: z.enum(JOB_SOURCES).optional().nullable(),
+  contact_name: z.string().optional().nullable(),
+  contact_email: z.string().optional().nullable(),
+  contact_phone: z.string().optional().nullable(),
 });
 
 type JobFormData = z.infer<typeof jobSchema>;
@@ -29,6 +35,10 @@ export function JobForm({ initialData, onSubmit, onCancel, loading }: JobFormPro
       venue: initialData.venue || '',
       scheduled_start: initialData.scheduled_start || '',
       scheduled_end: initialData.scheduled_end || '',
+      source: initialData.source || undefined,
+      contact_name: initialData.contact_name || '',
+      contact_email: initialData.contact_email || '',
+      contact_phone: initialData.contact_phone || '',
     } : undefined,
   });
 
@@ -103,6 +113,41 @@ export function JobForm({ initialData, onSubmit, onCancel, loading }: JobFormPro
           {...register('scheduled_end')}
           className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-primary focus:outline-none focus:ring-1 focus:ring-accent"
         />
+      </div>
+
+      {/* Intake Source */}
+      <div className="border-t border-dashed border-border pt-4 mt-4">
+        <p className="text-xs text-muted font-mono mb-3">// intake info</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="source" className="block text-sm font-medium mb-1.5">Source</label>
+            <select
+              id="source"
+              {...register('source')}
+              className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-primary focus:outline-none focus:ring-1 focus:ring-accent"
+            >
+              <option value="">No source</option>
+              <option value="direct">Direct</option>
+              <option value="email">Email</option>
+              <option value="phone">Phone</option>
+              <option value="referral">Referral</option>
+              <option value="website">Website</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label htmlFor="contact_name" className="block text-sm font-medium mb-1.5">Contact Name</label>
+            <input id="contact_name" type="text" {...register('contact_name')} placeholder="Client contact" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-primary placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent" />
+          </div>
+          <div>
+            <label htmlFor="contact_email" className="block text-sm font-medium mb-1.5">Contact Email</label>
+            <input id="contact_email" type="email" {...register('contact_email')} placeholder="contact@client.com" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-primary placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent" />
+          </div>
+          <div>
+            <label htmlFor="contact_phone" className="block text-sm font-medium mb-1.5">Contact Phone</label>
+            <input id="contact_phone" type="tel" {...register('contact_phone')} placeholder="+81-90-..." className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-primary placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent" />
+          </div>
+        </div>
       </div>
 
       {/* Actions */}

@@ -17,6 +17,17 @@ class JobState(str, enum.Enum):
     COMPLETE = "complete"
 
 
+class JobSource(str, enum.Enum):
+    """How the job request was received"""
+
+    DIRECT = "direct"
+    EMAIL = "email"
+    PHONE = "phone"
+    REFERRAL = "referral"
+    WEBSITE = "website"
+    OTHER = "other"
+
+
 class Job(Base, TenantMixin, TimestampMixin):
     """Job model with state machine and timezone-aware scheduling"""
 
@@ -29,5 +40,10 @@ class Job(Base, TenantMixin, TimestampMixin):
     scheduled_start = Column(DateTime(timezone=True), nullable=True)
     scheduled_end = Column(DateTime(timezone=True), nullable=True)
     state = Column(Enum(JobState), nullable=False, default=JobState.INTAKE)
+    # Intake metadata
+    source = Column(Enum(JobSource), nullable=True)
+    contact_name = Column(String, nullable=True)
+    contact_email = Column(String, nullable=True)
+    contact_phone = Column(String, nullable=True)
     # tenant_id from TenantMixin
     # created_at, updated_at from TimestampMixin
