@@ -11,10 +11,9 @@ class CrewAssignmentSummary(BaseModel):
 
     id: UUID
     crew_id: UUID
+    crew_name: str
     role: str | None
     status: str  # Use str to avoid circular import with AssignmentState
-
-    model_config = ConfigDict(from_attributes=True)
 
 
 class EquipmentAssignmentSummary(BaseModel):
@@ -22,9 +21,8 @@ class EquipmentAssignmentSummary(BaseModel):
 
     id: UUID
     equipment_id: UUID
+    equipment_name: str
     quantity_assigned: int
-
-    model_config = ConfigDict(from_attributes=True)
 
 
 class MessageSummary(BaseModel):

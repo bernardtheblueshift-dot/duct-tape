@@ -29,6 +29,8 @@ class CrewProfileResponse(BaseModel):
 
     id: UUID
     user_id: UUID
+    email: str
+    name: str
     phone: str | None
     bio: str | None
     hourly_rate: float | None
@@ -38,8 +40,6 @@ class CrewProfileResponse(BaseModel):
     rating_count: int
     created_at: datetime
     updated_at: datetime
-
-    model_config = ConfigDict(from_attributes=True)
 
 
 class AvailabilityPatternCreate(BaseModel):

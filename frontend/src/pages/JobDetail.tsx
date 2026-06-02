@@ -270,8 +270,8 @@ function CrewTab({ jobId, assignments }: { jobId: string; assignments: any[] }) 
           {assignments.map(assignment => (
             <div key={assignment.id} className="bg-surface border border-border rounded-lg p-4 flex items-center justify-between">
               <div className="space-y-1">
-                <div className="font-mono text-sm text-muted">{assignment.crew_id.substring(0, 8)}...</div>
-                <div className="text-sm">{assignment.role || '—'}</div>
+                <div className="font-medium">{assignment.crew_name || 'Unknown'}</div>
+                <div className="text-sm text-muted">{assignment.role || '—'}</div>
               </div>
               <span className={`px-2.5 py-0.5 text-xs font-medium rounded-full ${
                 assignment.status === 'confirmed' ? 'bg-green-500/20 text-green-500' :
@@ -318,7 +318,7 @@ function EquipmentTab({ jobId, assignments }: { jobId: string; assignments: any[
           {assignments.map(assignment => (
             <div key={assignment.id} className="bg-surface border border-border rounded-lg p-4 flex items-center justify-between">
               <div className="space-y-1">
-                <div className="font-mono text-sm text-muted">{assignment.equipment_id.substring(0, 8)}...</div>
+                <div className="font-medium">{assignment.equipment_name}</div>
               </div>
               <div className="font-mono text-sm">Qty: {assignment.quantity_assigned}</div>
             </div>
@@ -341,6 +341,7 @@ function EquipmentTab({ jobId, assignments }: { jobId: string; assignments: any[
 function MessagesTab({ jobId }: { jobId: string }) {
   const qc = useQueryClient();
   const [newMessage, setNewMessage] = useState('');
+  const { data: crewList = [] } = useCrewList();
 
   const { data: messages = [] } = useQuery({
     queryKey: ['messages', jobId],
@@ -370,7 +371,9 @@ function MessagesTab({ jobId }: { jobId: string }) {
           [...messages].reverse().map(msg => (
             <div key={msg.id} className="bg-surface border border-border rounded-lg p-4">
               <div className="flex items-start justify-between mb-2">
-                <div className="font-mono text-xs text-muted">{msg.user_id.substring(0, 8)}...</div>
+                <div className="text-xs font-medium text-muted">
+                  {crewList.find(c => c.user_id === msg.user_id)?.name || msg.user_id.substring(0, 8)}
+                </div>
                 <div className="font-mono text-xs text-muted">
                   {format(new Date(msg.created_at), 'dd MMM HH:mm')}
                 </div>
@@ -526,7 +529,7 @@ function AssignCrewModal({ jobId, open, onClose, onSuccess }: { jobId: string; o
               <option value="">Select crew member...</option>
               {crewList.map(crew => (
                 <option key={crew.id} value={crew.id}>
-                  {crew.user_id.substring(0, 8)}
+                  {crew.name || crew.email}
                 </option>
               ))}
             </select>

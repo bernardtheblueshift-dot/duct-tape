@@ -13,6 +13,8 @@ import {
   subMonths,
   addWeeks,
   subWeeks,
+  addDays,
+  subDays,
   parseISO,
   startOfDay,
   getHours,
@@ -26,9 +28,29 @@ import { type CalendarEvent } from '@/types/api';
 import { cn } from '@/lib/utils';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
+function ViewButtons({ current, setView }: { current: 'month' | 'week' | 'day'; setView: (v: 'month' | 'week' | 'day') => void }) {
+  const views = ['month', 'week', 'day'] as const;
+  return (
+    <div className="flex gap-1">
+      {views.map(v => (
+        <button
+          key={v}
+          onClick={() => setView(v)}
+          className={cn(
+            'px-3 py-1 rounded border text-sm capitalize',
+            current === v ? 'border-accent bg-accent' : 'border-border bg-background hover:bg-accent'
+          )}
+        >
+          {v}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [view, setView] = useState<'month' | 'week'>('month');
+  const [view, setView] = useState<'month' | 'week' | 'day'>('month');
   const navigate = useNavigate();
 
   const { data, isLoading } = useCalendarEvents(currentDate);
@@ -109,17 +131,7 @@ export function CalendarPage() {
             <h1 className="text-2xl font-semibold">Calendar</h1>
             <p className="text-muted font-mono text-sm">// schedule overview</p>
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setView('month')}
-              className="px-3 py-1 rounded border border-border bg-background hover:bg-accent"
-            >
-              Month
-            </button>
-            <button className="px-3 py-1 rounded border border-accent bg-accent">
-              Week
-            </button>
-          </div>
+          <ViewButtons current="week" setView={setView} />
         </div>
 
         {/* Week navigation */}
@@ -263,6 +275,107 @@ export function CalendarPage() {
     );
   }
 
+  if (view === 'day') {
+    const dayEvents = weekEvents.filter((event) => {
+      const dayStart = startOfDay(currentDate);
+      const dayEnd = new Date(currentDate);
+      dayEnd.setHours(23, 59, 59, 999);
+      const eventStart = parseISO(event.start);
+      const eventEnd = parseISO(event.end);
+      return eventStart <= dayEnd && eventEnd >= dayStart;
+    });
+
+    const calculateDayEventPosition = (event: CalendarEvent) => {
+      const eventStart = parseISO(event.start);
+      const eventEnd = parseISO(event.end);
+      const dayStart = startOfDay(currentDate);
+      const dayEnd = new Date(currentDate);
+      dayEnd.setHours(23, 59, 59, 999);
+      const clampedStart = max([eventStart, dayStart]);
+      const clampedEnd = min([eventEnd, dayEnd]);
+      const startHour = getHours(clampedStart);
+      const startMinute = getMinutes(clampedStart);
+      const top = startHour * 4 + (startMinute / 60) * 4;
+      const durationMinutes = differenceInMinutes(clampedEnd, clampedStart);
+      const height = Math.max(2, (durationMinutes / 60) * 4);
+      return { top, height };
+    };
+
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold">Calendar</h1>
+            <p className="text-muted font-mono text-sm">// schedule overview</p>
+          </div>
+          <ViewButtons current="day" setView={setView} />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => setCurrentDate(subDays(currentDate, 1))}
+            className="flex items-center gap-1 px-3 py-2 rounded border border-border hover:bg-accent"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Previous
+          </button>
+          <div className="text-lg font-semibold">
+            {format(currentDate, 'EEEE, MMMM d, yyyy')}
+          </div>
+          <button
+            onClick={() => setCurrentDate(addDays(currentDate, 1))}
+            className="flex items-center gap-1 px-3 py-2 rounded border border-border hover:bg-accent"
+          >
+            Next
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+
+        {weekLoading ? (
+          <div className="text-center text-muted font-mono text-sm py-8">Loading...</div>
+        ) : (
+          <div className="bg-surface rounded-lg overflow-hidden">
+            <div className="overflow-y-auto" style={{ maxHeight: '75vh' }}>
+              <div className="relative">
+                {Array.from({ length: 24 }, (_, hour) => (
+                  <div key={hour} className="flex border-b border-border" style={{ height: '4rem' }}>
+                    <div className="w-16 shrink-0 p-2 text-xs font-mono text-muted border-r border-border">
+                      {String(hour).padStart(2, '0')}:00
+                    </div>
+                    <div className="flex-1 relative">
+                      {hour === 0 &&
+                        dayEvents.map((event) => {
+                          const { top, height } = calculateDayEventPosition(event);
+                          return (
+                            <div
+                              key={event.id}
+                              className="absolute left-1 right-1 rounded px-3 py-1 cursor-pointer overflow-hidden z-10"
+                              style={{
+                                top: `${top}rem`,
+                                height: `${height}rem`,
+                                backgroundColor: event.color + '33',
+                                color: event.color,
+                              }}
+                              onClick={() => handleEventClick(event)}
+                            >
+                              <div className="text-sm font-semibold truncate">{event.title}</div>
+                              <div className="text-xs opacity-75">
+                                {format(parseISO(event.start), 'h:mm a')} – {format(parseISO(event.end), 'h:mm a')}
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       {/* Header */}
@@ -271,40 +384,17 @@ export function CalendarPage() {
           <h1 className="text-2xl font-semibold">Calendar</h1>
           <p className="text-muted font-mono text-sm">// schedule overview</p>
         </div>
-        <div className="flex gap-2">
-          <button
-            className="px-3 py-1 rounded border border-accent bg-accent"
-            onClick={() => setView('month')}
-          >
-            Month
-          </button>
-          <button
-            onClick={() => setView('week')}
-            className="px-3 py-1 rounded border border-border bg-background hover:bg-accent"
-          >
-            Week
-          </button>
-        </div>
+        <ViewButtons current="month" setView={setView} />
       </div>
 
       {/* Month navigation */}
       <div className="flex items-center justify-between">
-        <button
-          onClick={handlePrevMonth}
-          className="flex items-center gap-1 px-3 py-2 rounded border border-border hover:bg-accent"
-        >
-          <ChevronLeft className="h-4 w-4" />
-          Previous
+        <button onClick={handlePrevMonth} className="flex items-center gap-1 px-3 py-2 rounded border border-border hover:bg-accent">
+          <ChevronLeft className="h-4 w-4" /> Previous
         </button>
-        <div className="text-lg font-semibold">
-          {format(currentDate, 'MMMM yyyy')}
-        </div>
-        <button
-          onClick={handleNextMonth}
-          className="flex items-center gap-1 px-3 py-2 rounded border border-border hover:bg-accent"
-        >
-          Next
-          <ChevronRight className="h-4 w-4" />
+        <div className="text-lg font-semibold">{format(currentDate, 'MMMM yyyy')}</div>
+        <button onClick={handleNextMonth} className="flex items-center gap-1 px-3 py-2 rounded border border-border hover:bg-accent">
+          Next <ChevronRight className="h-4 w-4" />
         </button>
       </div>
 

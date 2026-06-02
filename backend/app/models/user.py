@@ -15,6 +15,7 @@ class User(Base, TenantMixin, TimestampMixin):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     email = Column(String, nullable=False, unique=True, index=True)
+    name = Column(String, nullable=False, default="")
     hashed_password = Column(String, nullable=False)
     is_active = Column(
         Boolean, default=False, nullable=False

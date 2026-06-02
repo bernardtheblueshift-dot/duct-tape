@@ -11,6 +11,7 @@ export type AvailabilityStatus = 'free' | 'booked' | 'unavailable';
 export interface User {
   id: string;
   email: string;
+  name: string;
   role: UserRole;
   is_active: boolean;
   timezone: string;
@@ -21,6 +22,7 @@ export interface User {
 export interface CrewAssignmentSummary {
   id: string;
   crew_id: string;
+  crew_name: string;
   role: string | null;
   status: string;
 }
@@ -28,6 +30,7 @@ export interface CrewAssignmentSummary {
 export interface EquipmentAssignmentSummary {
   id: string;
   equipment_id: string;
+  equipment_name: string;
   quantity_assigned: number;
 }
 
@@ -121,6 +124,8 @@ export interface CrewProfileUpdate {
 export interface CrewProfileResponse {
   id: string;
   user_id: string;
+  email: string;
+  name: string;
   phone: string | null;
   bio: string | null;
   hourly_rate: number | null;
@@ -409,6 +414,7 @@ export interface LoginRequest {
 export interface RegisterRequest {
   email: string;
   password: string;
+  name: string;
   company_name: string;
 }
 

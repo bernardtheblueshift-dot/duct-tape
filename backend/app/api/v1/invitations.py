@@ -133,6 +133,7 @@ async def accept_invitation(
     # Create user with is_active=True (no email verification needed for invitations)
     new_user = User(
         email=invitation.email,
+        name=request.name,
         hashed_password=hash_password(request.password),
         tenant_id=invitation.tenant_id,
         role=invitation.role,

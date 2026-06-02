@@ -6,6 +6,7 @@ from uuid import UUID
 class UserResponse(BaseModel):
     id: UUID
     email: EmailStr
+    name: str
     role: str  # "admin" or "crew"
     is_active: bool
     timezone: str

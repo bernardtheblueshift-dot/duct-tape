@@ -267,6 +267,7 @@ async def get_job_detail(
         scheduled_end=job.scheduled_end,
         state=job.state.value,
         crew_role=assignment.role,
+        assignment_id=assignment.id,
         assignment_status=assignment.status.value,
         files=files,
     )
@@ -491,7 +492,15 @@ async def get_own_profile(
             detail="Crew profile not found",
         )
 
-    return crew_profile
+    return CrewProfileResponse(
+        id=crew_profile.id, user_id=crew_profile.user_id,
+        email=current_user.email, name=current_user.name,
+        phone=crew_profile.phone, bio=crew_profile.bio,
+        hourly_rate=crew_profile.hourly_rate, skills=crew_profile.skills,
+        archived_at=crew_profile.archived_at, rating_average=crew_profile.rating_average,
+        rating_count=crew_profile.rating_count, created_at=crew_profile.created_at,
+        updated_at=crew_profile.updated_at,
+    )
 
 
 @router.patch("/profile", response_model=CrewProfileResponse)
@@ -532,7 +541,15 @@ async def update_own_profile(
     await db.commit()
     await db.refresh(crew_profile)
 
-    return crew_profile
+    return CrewProfileResponse(
+        id=crew_profile.id, user_id=crew_profile.user_id,
+        email=current_user.email, name=current_user.name,
+        phone=crew_profile.phone, bio=crew_profile.bio,
+        hourly_rate=crew_profile.hourly_rate, skills=crew_profile.skills,
+        archived_at=crew_profile.archived_at, rating_average=crew_profile.rating_average,
+        rating_count=crew_profile.rating_count, created_at=crew_profile.created_at,
+        updated_at=crew_profile.updated_at,
+    )
 
 
 @router.put("/availability", response_model=List[AvailabilityPatternResponse])

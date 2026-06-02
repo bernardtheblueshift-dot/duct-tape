@@ -38,7 +38,8 @@ async def seed():
 
         # === USERS ===
         admin = User(
-            id=uuid4(), email="admin@gt.dev", hashed_password=hash_password("admin123"),
+            id=uuid4(), email="admin@gt.dev", name="Admin",
+            hashed_password=hash_password("admin123"),
             role=UserRole.ADMIN, is_active=True, tenant_id=tid,
         )
         crew_users = []
@@ -51,9 +52,10 @@ async def seed():
             ("ryo@gt.dev", "Ryo Suzuki"),
             ("hana@gt.dev", "Hana Kobayashi"),
         ]
-        for email, _ in crew_data:
+        for email, name in crew_data:
             u = User(
-                id=uuid4(), email=email, hashed_password=hash_password("crew123"),
+                id=uuid4(), email=email, name=name,
+                hashed_password=hash_password("crew123"),
                 role=UserRole.CREW, is_active=True, tenant_id=tid,
             )
             crew_users.append(u)

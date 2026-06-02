@@ -53,9 +53,10 @@ class PortalJobDetailResponse(BaseModel):
     scheduled_start: datetime | None
     scheduled_end: datetime | None
     state: str
-    crew_role: str | None  # This crew member's role on the job
-    assignment_status: str  # This crew member's assignment status
-    files: list[PortalFileItem]  # Briefs and documents
+    crew_role: str | None
+    assignment_id: UUID
+    assignment_status: str
+    files: list[PortalFileItem]
 
     model_config = ConfigDict(from_attributes=True)
 

@@ -45,7 +45,7 @@ export function Navbar() {
           {/* User menu */}
           <div className="flex items-center gap-3">
             <span className="text-sm font-mono text-muted-foreground">
-              {user?.email}
+              {user?.name || user?.email}
             </span>
             <button
               onClick={handleLogout}

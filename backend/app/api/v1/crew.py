@@ -95,7 +95,14 @@ async def create_crew_profile(
     db.add(profile)
     await db.commit()
     await db.refresh(profile)
-    return profile
+
+    return CrewProfileResponse(
+        id=profile.id, user_id=profile.user_id, email=user.email, name=user.name,
+        phone=profile.phone, bio=profile.bio, hourly_rate=profile.hourly_rate,
+        skills=profile.skills, archived_at=profile.archived_at,
+        rating_average=profile.rating_average, rating_count=profile.rating_count,
+        created_at=profile.created_at, updated_at=profile.updated_at,
+    )
 
 
 @router.get("/", response_model=List[CrewProfileResponse])
@@ -119,7 +126,9 @@ async def list_crew(
 
     Results are automatically filtered by tenant via RLS.
     """
-    query = select(CrewProfile)
+    query = select(CrewProfile, User.email, User.name).join(
+        User, CrewProfile.user_id == User.id
+    )
 
     # Default: exclude archived profiles
     if not include_archived:
@@ -128,11 +137,10 @@ async def list_crew(
     # Apply search filter
     if search:
         search_pattern = f"%{search}%"
-        # Join with User to search email
-        query = query.join(User, CrewProfile.user_id == User.id)
         query = query.where(
             or_(
                 User.email.ilike(search_pattern),
+                User.name.ilike(search_pattern),
                 CrewProfile.bio.ilike(search_pattern),
                 CrewProfile.phone.ilike(search_pattern),
             )
@@ -141,7 +149,6 @@ async def list_crew(
     # Apply role filter - find crew who have been assigned this role
     if role:
         role_pattern = f"%{role}%"
-        # Subquery for crew IDs with matching role assignments
         role_subquery = (
             select(CrewAssignment.crew_id)
             .where(CrewAssignment.role.ilike(role_pattern))
@@ -155,8 +162,25 @@ async def list_crew(
             query = query.where(CrewProfile.skills.contains([skill]))
 
     result = await db.execute(query)
-    crew = result.scalars().all()
-    return crew
+    rows = result.all()
+    return [
+        CrewProfileResponse(
+            id=profile.id,
+            user_id=profile.user_id,
+            email=email,
+            name=name,
+            phone=profile.phone,
+            bio=profile.bio,
+            hourly_rate=profile.hourly_rate,
+            skills=profile.skills,
+            archived_at=profile.archived_at,
+            rating_average=profile.rating_average,
+            rating_count=profile.rating_count,
+            created_at=profile.created_at,
+            updated_at=profile.updated_at,
+        )
+        for profile, email, name in rows
+    ]
 
 
 @router.get("/skills-matrix", response_model=SkillsMatrixResponse)
@@ -215,16 +239,35 @@ async def get_crew_profile(
 
     RLS automatically filters by tenant.
     """
-    result = await db.execute(select(CrewProfile).where(CrewProfile.id == crew_id))
-    profile = result.scalar_one_or_none()
+    result = await db.execute(
+        select(CrewProfile, User.email, User.name)
+        .join(User, CrewProfile.user_id == User.id)
+        .where(CrewProfile.id == crew_id)
+    )
+    row = result.one_or_none()
 
-    if not profile:
+    if not row:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Crew profile not found",
         )
 
-    return profile
+    profile, email, name = row
+    return CrewProfileResponse(
+        id=profile.id,
+        user_id=profile.user_id,
+        email=email,
+        name=name,
+        phone=profile.phone,
+        bio=profile.bio,
+        hourly_rate=profile.hourly_rate,
+        skills=profile.skills,
+        archived_at=profile.archived_at,
+        rating_average=profile.rating_average,
+        rating_count=profile.rating_count,
+        created_at=profile.created_at,
+        updated_at=profile.updated_at,
+    )
 
 
 @router.patch("/{crew_id}", response_model=CrewProfileResponse)
@@ -257,7 +300,17 @@ async def update_crew_profile(
 
     await db.commit()
     await db.refresh(profile)
-    return profile
+
+    # Get user email/name for response
+    user_result = await db.execute(select(User).where(User.id == profile.user_id))
+    user = user_result.scalar_one()
+    return CrewProfileResponse(
+        id=profile.id, user_id=profile.user_id, email=user.email, name=user.name,
+        phone=profile.phone, bio=profile.bio, hourly_rate=profile.hourly_rate,
+        skills=profile.skills, archived_at=profile.archived_at,
+        rating_average=profile.rating_average, rating_count=profile.rating_count,
+        created_at=profile.created_at, updated_at=profile.updated_at,
+    )
 
 
 @router.post("/{crew_id}/archive", response_model=CrewProfileResponse)
@@ -286,7 +339,16 @@ async def archive_crew_profile(
     profile.archived_at = datetime.now(timezone.utc)
     await db.commit()
     await db.refresh(profile)
-    return profile
+
+    user_result = await db.execute(select(User).where(User.id == profile.user_id))
+    user = user_result.scalar_one()
+    return CrewProfileResponse(
+        id=profile.id, user_id=profile.user_id, email=user.email, name=user.name,
+        phone=profile.phone, bio=profile.bio, hourly_rate=profile.hourly_rate,
+        skills=profile.skills, archived_at=profile.archived_at,
+        rating_average=profile.rating_average, rating_count=profile.rating_count,
+        created_at=profile.created_at, updated_at=profile.updated_at,
+    )
 
 
 @router.post("/{crew_id}/unarchive", response_model=CrewProfileResponse)
@@ -314,7 +376,16 @@ async def unarchive_crew_profile(
     profile.archived_at = None
     await db.commit()
     await db.refresh(profile)
-    return profile
+
+    user_result = await db.execute(select(User).where(User.id == profile.user_id))
+    user = user_result.scalar_one()
+    return CrewProfileResponse(
+        id=profile.id, user_id=profile.user_id, email=user.email, name=user.name,
+        phone=profile.phone, bio=profile.bio, hourly_rate=profile.hourly_rate,
+        skills=profile.skills, archived_at=profile.archived_at,
+        rating_average=profile.rating_average, rating_count=profile.rating_count,
+        created_at=profile.created_at, updated_at=profile.updated_at,
+    )
 
 
 @router.post(

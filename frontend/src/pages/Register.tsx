@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { api, APIError } from '@/lib/api';
 
 export function RegisterPage() {
+  const [name, setName] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -16,7 +17,7 @@ export function RegisterPage() {
     setLoading(true);
 
     try {
-      await api.auth.register({ email, password, company_name: companyName });
+      await api.auth.register({ email, password, name, company_name: companyName });
       setSuccess(true);
     } catch (err) {
       if (err instanceof APIError) {
@@ -68,6 +69,21 @@ export function RegisterPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <label htmlFor="name" className="block text-sm font-medium">
+              Your Name
+            </label>
+            <input
+              id="name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-primary placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-accent"
+              placeholder="Jane Smith"
+            />
+          </div>
+
           <div className="space-y-2">
             <label htmlFor="company" className="block text-sm font-medium">
               Company Name

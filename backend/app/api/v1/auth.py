@@ -59,6 +59,7 @@ async def register(request: Request, register_data: RegisterRequest, db: AsyncSe
     # Create admin user
     user = User(
         email=register_data.email,
+        name=register_data.name,
         hashed_password=hash_password(register_data.password),
         tenant_id=tenant.id,
         role=UserRole.ADMIN,

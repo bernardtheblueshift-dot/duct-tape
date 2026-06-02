@@ -54,8 +54,8 @@ export function CrewDetailPage() {
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-2xl font-semibold">Crew Profile</h1>
-            <p className="text-muted font-mono text-xs mt-1">{crew.user_id}</p>
+            <h1 className="text-2xl font-semibold">{crew.name || crew.email}</h1>
+            <p className="text-muted font-mono text-xs mt-1">{crew.email}</p>
           </div>
         </div>
         <button
@@ -71,8 +71,8 @@ export function CrewDetailPage() {
         <h2 className="text-lg font-semibold">Profile</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <div className="text-sm text-muted mb-1">User ID</div>
-            <div className="font-mono text-sm">{crew.user_id}</div>
+            <div className="text-sm text-muted mb-1">Email</div>
+            <div className="font-mono text-sm">{crew.email}</div>
           </div>
           <div>
             <div className="text-sm text-muted mb-1">Phone</div>

@@ -263,42 +263,50 @@ async def list_jobs(
 
     # Batch query assignments for all jobs
     if jobs:
+        from app.models import CrewProfile, Equipment
         job_ids = [job.id for job in jobs]
 
-        # Query all crew assignments
+        # Query all crew assignments with user names
         crew_result = await db.execute(
-            select(CrewAssignment).where(CrewAssignment.job_id.in_(job_ids))
+            select(CrewAssignment, User.name)
+            .join(CrewProfile, CrewAssignment.crew_id == CrewProfile.id)
+            .join(User, CrewProfile.user_id == User.id)
+            .where(CrewAssignment.job_id.in_(job_ids))
         )
-        all_crew_assignments = crew_result.scalars().all()
+        all_crew_rows = crew_result.all()
 
-        # Query all equipment assignments
+        # Query all equipment assignments with equipment names
         equipment_result = await db.execute(
-            select(EquipmentAssignment).where(EquipmentAssignment.job_id.in_(job_ids))
+            select(EquipmentAssignment, Equipment.name)
+            .join(Equipment, EquipmentAssignment.equipment_id == Equipment.id)
+            .where(EquipmentAssignment.job_id.in_(job_ids))
         )
-        all_equipment_assignments = equipment_result.scalars().all()
+        all_equipment_rows = equipment_result.all()
 
         # Group assignments by job_id
         crew_by_job = {}
-        for ca in all_crew_assignments:
+        for ca, crew_name in all_crew_rows:
             if ca.job_id not in crew_by_job:
                 crew_by_job[ca.job_id] = []
             crew_by_job[ca.job_id].append(
                 CrewAssignmentSummary(
                     id=ca.id,
                     crew_id=ca.crew_id,
+                    crew_name=crew_name or "",
                     role=ca.role,
                     status=ca.status.value,
                 )
             )
 
         equipment_by_job = {}
-        for ea in all_equipment_assignments:
+        for ea, equip_name in all_equipment_rows:
             if ea.job_id not in equipment_by_job:
                 equipment_by_job[ea.job_id] = []
             equipment_by_job[ea.job_id].append(
                 EquipmentAssignmentSummary(
                     id=ea.id,
                     equipment_id=ea.equipment_id,
+                    equipment_name=equip_name,
                     quantity_assigned=ea.quantity_assigned,
                 )
             )
@@ -358,31 +366,40 @@ async def get_job(
             detail="Job not found",
         )
 
-    # Query crew assignments
+    from app.models import CrewProfile, Equipment
+
+    # Query crew assignments with names
     crew_result = await db.execute(
-        select(CrewAssignment).where(CrewAssignment.job_id == job_id)
+        select(CrewAssignment, User.name)
+        .join(CrewProfile, CrewAssignment.crew_id == CrewProfile.id)
+        .join(User, CrewProfile.user_id == User.id)
+        .where(CrewAssignment.job_id == job_id)
     )
     crew_assignments = [
         CrewAssignmentSummary(
             id=ca.id,
             crew_id=ca.crew_id,
+            crew_name=crew_name or "",
             role=ca.role,
             status=ca.status.value,
         )
-        for ca in crew_result.scalars().all()
+        for ca, crew_name in crew_result.all()
     ]
 
-    # Query equipment assignments
+    # Query equipment assignments with names
     equipment_result = await db.execute(
-        select(EquipmentAssignment).where(EquipmentAssignment.job_id == job_id)
+        select(EquipmentAssignment, Equipment.name)
+        .join(Equipment, EquipmentAssignment.equipment_id == Equipment.id)
+        .where(EquipmentAssignment.job_id == job_id)
     )
     equipment_assignments = [
         EquipmentAssignmentSummary(
             id=ea.id,
             equipment_id=ea.equipment_id,
+            equipment_name=equip_name,
             quantity_assigned=ea.quantity_assigned,
         )
-        for ea in equipment_result.scalars().all()
+        for ea, equip_name in equipment_result.all()
     ]
 
     # Get coordination summary
@@ -420,7 +437,7 @@ async def update_job(
     Only updates fields provided in request (partial updates supported).
     RLS automatically filters by tenant.
     """
-    from app.models import CrewAssignment, EquipmentAssignment
+    from app.models import CrewAssignment, EquipmentAssignment, CrewProfile, Equipment
     from app.schemas.job import CrewAssignmentSummary, EquipmentAssignmentSummary
 
     result = await db.execute(select(Job).where(Job.id == job_id))
@@ -440,37 +457,36 @@ async def update_job(
     await db.commit()
     await db.refresh(job)
 
-    # Query crew assignments
+    # Query crew assignments with names
     crew_result = await db.execute(
-        select(CrewAssignment).where(CrewAssignment.job_id == job_id)
+        select(CrewAssignment, User.name)
+        .join(CrewProfile, CrewAssignment.crew_id == CrewProfile.id)
+        .join(User, CrewProfile.user_id == User.id)
+        .where(CrewAssignment.job_id == job_id)
     )
     crew_assignments = [
         CrewAssignmentSummary(
-            id=ca.id,
-            crew_id=ca.crew_id,
-            role=ca.role,
-            status=ca.status.value,
+            id=ca.id, crew_id=ca.crew_id, crew_name=cn or "", role=ca.role, status=ca.status.value,
         )
-        for ca in crew_result.scalars().all()
+        for ca, cn in crew_result.all()
     ]
 
-    # Query equipment assignments
+    # Query equipment assignments with names
     equipment_result = await db.execute(
-        select(EquipmentAssignment).where(EquipmentAssignment.job_id == job_id)
+        select(EquipmentAssignment, Equipment.name)
+        .join(Equipment, EquipmentAssignment.equipment_id == Equipment.id)
+        .where(EquipmentAssignment.job_id == job_id)
     )
     equipment_assignments = [
         EquipmentAssignmentSummary(
-            id=ea.id,
-            equipment_id=ea.equipment_id,
-            quantity_assigned=ea.quantity_assigned,
+            id=ea.id, equipment_id=ea.equipment_id, equipment_name=en, quantity_assigned=ea.quantity_assigned,
         )
-        for ea in equipment_result.scalars().all()
+        for ea, en in equipment_result.all()
     ]
 
     # Get coordination summary
     coordination = await build_coordination_summary(job.id, db)
 
-    # Build response with assignment and coordination data
     return {
         "id": job.id,
         "title": job.title,
@@ -562,7 +578,7 @@ async def transition_job_state(
     Returns 400 if transition is invalid.
     RLS automatically filters by tenant.
     """
-    from app.models import CrewAssignment, EquipmentAssignment, AssignmentState, CrewProfile
+    from app.models import CrewAssignment, EquipmentAssignment, AssignmentState, CrewProfile, Equipment
     from app.schemas.job import CrewAssignmentSummary, EquipmentAssignmentSummary
 
     # Get job
@@ -618,37 +634,36 @@ async def transition_job_state(
             except Exception:
                 pass
 
-    # Query crew assignments
+    # Query crew assignments with names
     crew_result = await db.execute(
-        select(CrewAssignment).where(CrewAssignment.job_id == job_id)
+        select(CrewAssignment, User.name)
+        .join(CrewProfile, CrewAssignment.crew_id == CrewProfile.id)
+        .join(User, CrewProfile.user_id == User.id)
+        .where(CrewAssignment.job_id == job_id)
     )
     crew_assignments = [
         CrewAssignmentSummary(
-            id=ca.id,
-            crew_id=ca.crew_id,
-            role=ca.role,
-            status=ca.status.value,
+            id=ca.id, crew_id=ca.crew_id, crew_name=cn or "", role=ca.role, status=ca.status.value,
         )
-        for ca in crew_result.scalars().all()
+        for ca, cn in crew_result.all()
     ]
 
-    # Query equipment assignments
+    # Query equipment assignments with names
     equipment_result = await db.execute(
-        select(EquipmentAssignment).where(EquipmentAssignment.job_id == job_id)
+        select(EquipmentAssignment, Equipment.name)
+        .join(Equipment, EquipmentAssignment.equipment_id == Equipment.id)
+        .where(EquipmentAssignment.job_id == job_id)
     )
     equipment_assignments = [
         EquipmentAssignmentSummary(
-            id=ea.id,
-            equipment_id=ea.equipment_id,
-            quantity_assigned=ea.quantity_assigned,
+            id=ea.id, equipment_id=ea.equipment_id, equipment_name=en, quantity_assigned=ea.quantity_assigned,
         )
-        for ea in equipment_result.scalars().all()
+        for ea, en in equipment_result.all()
     ]
 
     # Get coordination summary
     coordination = await build_coordination_summary(job.id, db)
 
-    # Build response with assignment and coordination data
     return {
         "id": job.id,
         "title": job.title,

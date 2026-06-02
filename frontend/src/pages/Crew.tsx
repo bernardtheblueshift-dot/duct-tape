@@ -108,11 +108,12 @@ export function CrewPage() {
           {
             key: 'name',
             header: 'Name',
-            render: (crew) => {
-              // For v1, we don't have User name lookup, so show truncated user_id
-              const shortId = crew.user_id.substring(0, 8);
-              return <span className="font-medium">Crew {shortId}</span>;
-            },
+            render: (crew) => (
+              <div>
+                <div className="font-medium">{crew.name || crew.email}</div>
+                <div className="text-xs text-muted font-mono">{crew.email}</div>
+              </div>
+            ),
           },
           {
             key: 'skills',
@@ -173,10 +174,9 @@ export function CrewPage() {
         ]}
         onRowClick={(crew) => navigate(`/crew/${crew.id}`)}
         renderMobileCard={(crew) => {
-          const shortId = crew.user_id.substring(0, 8);
           return (
             <div className="space-y-2">
-              <div className="font-medium">Crew {shortId}</div>
+              <div className="font-medium">{crew.name || crew.email}</div>
               <div className="flex flex-wrap gap-1">
                 {crew.skills.slice(0, 3).map(skill => (
                   <span key={skill} className="rounded-full bg-secondary px-2 py-0.5 text-xs font-mono">
