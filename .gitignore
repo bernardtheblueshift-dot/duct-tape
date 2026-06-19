@@ -38,3 +38,6 @@ uploads/
 
 # OS
 .DS_Store
+
+# Third-party calendar exports (not part of the project)
+*.ics

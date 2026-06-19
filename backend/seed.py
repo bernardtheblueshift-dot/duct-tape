@@ -143,7 +143,7 @@ async def seed():
              now + timedelta(days=21, hours=11), now + timedelta(days=22, hours=22),
              JobSource.REFERRAL, "Yamada Productions", "info@yamada-prod.co.jp", None),
             ("Board Meeting Webcast", "Quarterly board meeting with remote attendees via stream",
-             "HQ Conference Room 36F", JobState.SIMMER,
+             "Main Conference Room", JobState.SIMMER,
              now + timedelta(days=14, hours=14), now + timedelta(days=14, hours=16),
              JobSource.DIRECT, None, None, None),
             # Intake
